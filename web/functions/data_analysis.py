@@ -1,4 +1,4 @@
-# %% Librerias
+# %% Libraries
 
 import numpy as np
 import pandas as pd
@@ -8,184 +8,184 @@ import streamlit as st
 import plotly.express as px
 from plotly.subplots import make_subplots
 
-# %% Funciones
+# %% Functions
 
-def cantidad_vendida_mes(datos, year):
+def quantity_sold_monthly(data, year):
 
-    # Filtramos los datos para el año especificado
-    datos_año = datos[datos['Fecha de venta'].dt.year == year]
+    # Filter data for the specified year
+    data_year = data[data['Fecha de venta'].dt.year == year]
 
-    # Obtenemos las fechas teniendo en cuenta hasta los meses
-    fechas_por_mes = datos_año['Fecha de venta'].dt.to_period('M')
+    # Get dates considering up to the months
+    dates_per_month = data_year['Fecha de venta'].dt.to_period('M')
 
-    # Factorizamos para tener únicamente los valores de los meses
-    eje_x = fechas_por_mes.factorize()[1]
-    num_ventas_mes = np.bincount(fechas_por_mes.factorize()[0])
+    # Factorize to have only month values
+    x_axis = dates_per_month.factorize()[1]
+    num_sales_per_month = np.bincount(dates_per_month.factorize()[0])
 
-    # Creamos el gráfico de barras con Plotly
-    fig = px.bar(datos_año, x = eje_x.astype(str), y = num_ventas_mes,
-                 template = 'plotly_dark', text = num_ventas_mes)
+    # Create bar chart with Plotly
+    fig = px.bar(data_year, x=x_axis.astype(str), y=num_sales_per_month,
+                 template='plotly_dark', text=num_sales_per_month)
     
-    # Actualizamos los nombres de los titulos del grafico de barras
-    fig.update_layout(xaxis_title = "Mes", yaxis_title = "Cantidad vendida", 
+    # Update title names for the bar chart
+    fig.update_layout(xaxis_title="Mes", yaxis_title="Cantidad vendida", 
                       font=dict(size=12))
 
-    # Mostramos los valores de cada barra encima de la barra
-    fig.update_traces(texttemplate = '%{text:.2s}', textposition = 'outside')
-    fig.update_layout(uniformtext_minsize = 8, uniformtext_mode = 'hide', autosize = True)
+    # Show values of each bar on top of the bar
+    fig.update_traces(texttemplate='%{text:.2s}', textposition='outside')
+    fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', autosize=True)
 
     return fig
 
-def dinero_obtenido_mes(datos, year):
+def revenue_per_month(data, year):
 
-    # Filtramos los datos para el año especificado y creamos una copia explícita
-    datos_año = datos[datos['Fecha de venta'].dt.year == year].copy()
+    # Filter data for the specified year and create an explicit copy
+    data_year = data[data['Fecha de venta'].dt.year == year].copy()
 
-    # Obtenemos las fechas teniendo en cuenta hasta los meses
-    fechas_por_mes = datos_año['Fecha de venta'].dt.to_period('M')
+    # Get dates considering up to the months
+    dates_per_month = data_year['Fecha de venta'].dt.to_period('M')
 
-    # Primero, necesitamos convertir la columna "Precio producto" a tipo string
-    datos_año['Precio producto'] = datos_año['Precio producto'].astype(str)
+    # First, we need to convert the "Product Price" column to string type
+    data_year['Precio producto'] = data_year['Precio producto'].astype(str)
 
-    # Luego, reemplazamos las comas por puntos
-    datos_año['Precio producto'] = datos_año['Precio producto'].str.replace(',', '.')
+    # Then, replace commas with dots
+    data_year['Precio producto'] = data_year['Precio producto'].str.replace(',', '.')
 
-    # Finalmente, convertimos la columna "Precio producto" de nuevo a tipo float
-    datos_año['Precio producto'] = datos_año['Precio producto'].astype(float)
+    # Finally, convert the "Product Price" column back to float type
+    data_year['Precio producto'] = data_year['Precio producto'].astype(float)
 
-    # Agrupamos por mes y sumamos los precios de los productos vendidos en cada mes
-    dinero_obtenido_mes = datos_año.groupby(fechas_por_mes)['Precio producto'].sum()
+    # Group by month and sum the prices of products sold in each month
+    revenue_per_month = data_year.groupby(dates_per_month)['Precio producto'].sum()
 
-    # Factorizamos para tener únicamente los valores de los meses
-    eje_x = dinero_obtenido_mes.index.factorize()[1]
-    dinero_obtenido = dinero_obtenido_mes.values
+    # Factorize to have only month values
+    x_axis = revenue_per_month.index.factorize()[1]
+    revenue_obtained = revenue_per_month.values
 
-    # Creamos el gráfico de barras con Plotly
-    fig = px.bar(datos_año, x = eje_x.astype(str), y = dinero_obtenido,
-                 template = 'plotly_dark', text = dinero_obtenido)
+    # Create bar chart with Plotly
+    fig = px.bar(data_year, x=x_axis.astype(str), y=revenue_obtained,
+                 template='plotly_dark', text=revenue_obtained)
     
-    # Actualizamos los nombres de los titulos del grafico de barras
-    fig.update_layout(xaxis_title = "Mes", yaxis_title = "Ganancias", 
+    # Update title names for the bar chart
+    fig.update_layout(xaxis_title="Mes", yaxis_title="Ganancias", 
                       font=dict(size=12))
 
-    # Mostramos los valores de cada barra encima de la barra
-    fig.update_traces(texttemplate = '%{text:.2s}', textposition = 'outside')
-    fig.update_layout(uniformtext_minsize = 8, uniformtext_mode = 'hide', autosize = True)
+    # Show values of each bar on top of the bar
+    fig.update_traces(texttemplate='%{text:.2s}', textposition='outside')
+    fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', autosize=True)
     
     return fig
 
-def categoria_productos(datos, year):
+def product_category(data, year):
 
-    # Filtramos los datos para el año especificado y creamos una copia explícita
-    datos_año = datos[datos['Fecha de venta'].dt.year == year].copy()
+    # Filter data for the specified year and create an explicit copy
+    data_year = data[data['Fecha de venta'].dt.year == year].copy()
 
-    # Obtencion de las categorias
-    categorias = datos_año['Tipo producto'].factorize()[1]
-    num_prod_vend = np.bincount(datos_año['Tipo producto'].factorize()[0])
+    # Get categories
+    categories = data_year['Tipo producto'].factorize()[1]
+    num_products_sold = np.bincount(data_year['Tipo producto'].factorize()[0])
 
-    # Creamos el gráfico de barras con Plotly
-    fig = px.bar(datos, x = categorias.astype(str), y = num_prod_vend,
-                 template = 'plotly_dark', text = num_prod_vend)
+    # Create bar chart with Plotly
+    fig = px.bar(data, x=categories.astype(str), y=num_products_sold,
+                 template='plotly_dark', text=num_products_sold)
     
-    # Actualizamos los nombres de los titulos del grafico de barras
-    fig.update_layout(xaxis_title = "Categoría", yaxis_title = "Cantidad vendida", 
+    # Update title names for the bar chart
+    fig.update_layout(xaxis_title="Categoría", yaxis_title="Cantidad vendida", 
                       font=dict(size=12))
 
-    # Mostramos los valores de cada barra encima de la barra
-    fig.update_traces(texttemplate = '%{text:.2s}', textposition = 'outside')
-    fig.update_layout(uniformtext_minsize = 8, uniformtext_mode = 'hide', autosize = True)
+    # Show values of each bar on top of the bar
+    fig.update_traces(texttemplate='%{text:.2s}', textposition='outside')
+    fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', autosize=True)
 
     return fig
 
-def genero_estado(datos, year):
+def gender_status(data, year):
 
-    # Filtramos los datos para el año especificado
-    datos_año = datos[datos['Fecha de venta'].dt.year == year].copy()
+    # Filter data for the specified year
+    data_year = data[data['Fecha de venta'].dt.year == year].copy()
 
-    #  Agrupar segun el genero
+    # Group by gender
     df_2dhist = pd.DataFrame({
         x_label: grp['Estado del producto'].value_counts()
-        for x_label, grp in datos_año.groupby('Genero')
+        for x_label, grp in data_year.groupby('Genero')
     })
 
-    # Creamos el heatmap
-    fig = px.imshow(df_2dhist, text_auto = True)
+    # Create heatmap
+    fig = px.imshow(df_2dhist, text_auto=True)
 
-    # Actualizamos los nombres de los titulos del heatmap
-    fig.update_layout(xaxis_title = "Género", yaxis_title = "Estado del producto", 
+    # Update title names for the heatmap
+    fig.update_layout(xaxis_title="Género", yaxis_title="Estado del producto", 
                       font=dict(size=12))
 
     fig.update_coloraxes(showscale=False)
 
     return fig
 
-def estado_pais(datos, year):
+def status_country(data, year):
 
-    # Filtramos los datos para el año especificado
-    datos_año = datos[datos['Fecha de venta'].dt.year == year].copy()
+    # Filter data for the specified year
+    data_year = data[data['Fecha de venta'].dt.year == year].copy()
 
-    # Agrupar segun el estado del producto
+    # Group by product status
     df_2dhist = pd.DataFrame({
         x_label: grp['Pais'].value_counts()
-        for x_label, grp in datos_año.groupby('Estado del producto')
+        for x_label, grp in data_year.groupby('Estado del producto')
     })
 
-    # Creamos el heatmap
-    fig = px.imshow(df_2dhist, text_auto = True)
+    # Create heatmap
+    fig = px.imshow(df_2dhist, text_auto=True)
 
-    # Actualizamos los nombres de los titulos del heatmap
-    fig.update_layout(xaxis_title = "Estado del producto", yaxis_title = "País", 
-                      font=dict(size=12), height = 10)
+    # Update title names for the heatmap
+    fig.update_layout(xaxis_title="Estado del producto", yaxis_title="País", 
+                      font=dict(size=12), height=10)
 
     return fig
 
 def data_pipeline(df, path, year):
 
-    # Creacion de las figuras de analisis de ventas
-    fig_barras = make_subplots(rows = 2, cols = 2, 
+    # Create sales analysis figures
+    fig_bars = make_subplots(rows=2, cols=2, 
                                 subplot_titles=(f"Cantidad vendida por mes en {year}",
                                                 f'Dinero obtenido por mes en {year}',
                                                 f'Cantidad vendida por categoria en {year}'),
                                 vertical_spacing=0.15)
 
-    # Creacion de las figuras de analisis de ventas
+    # Create heatmap analysis figures
     fig_heatmaps = make_subplots(rows=2, cols=2,
-                                specs = [[{"rowspan": 2}, {}],
+                                specs=[[{"rowspan": 2}, {}],
                                         [None, {}]],
                                 horizontal_spacing=0.15)
 
-    # Visualización de gráficos de barras
-    graph_ventas = cantidad_vendida_mes(df, year)
-    graph_ganancia = dinero_obtenido_mes(df, year)
-    graph_products = categoria_productos(df, year)
+    # Visualize bar charts
+    graph_sales = quantity_sold_monthly(df, year)
+    graph_revenue = revenue_per_month(df, year)
+    graph_categories = product_category(df, year)
 
-    # Visualización de gráficos heatmap
-    graph_estado_pais = estado_pais(df, year)
-    graph_genero_estado = genero_estado(df, year)
+    # Visualize heatmaps
+    graph_status_country = status_country(df, year)
+    graph_gender_status = gender_status(df, year)
     
-    # Añadimos las trazas de los gráficos de barras
-    fig_barras.add_trace(graph_ventas['data'][0], row = 1, col = 1)
-    fig_barras.add_trace(graph_ganancia['data'][0], row = 1, col = 2)
-    fig_barras.add_trace(graph_products['data'][0], row = 2, col = 1)
+    # Add traces of bar charts
+    fig_bars.add_trace(graph_sales['data'][0], row=1, col=1)
+    fig_bars.add_trace(graph_revenue['data'][0], row=1, col=2)
+    fig_bars.add_trace(graph_categories['data'][0], row=2, col=1)
 
-    # Añadimos las trazas de los heatmaps
-    fig_heatmaps.add_trace(graph_estado_pais['data'][0], row = 1, col = 1)
-    fig_heatmaps.add_trace(graph_genero_estado['data'][0], row = 1, col = 2)
+    # Add traces of heatmaps
+    fig_heatmaps.add_trace(graph_status_country['data'][0], row=1, col=1)
+    fig_heatmaps.add_trace(graph_gender_status['data'][0], row=1, col=2)
 
-    # Ajustar los tamaños de las graficas de barras
-    fig_barras.update_layout(height=800, width=800, 
+    # Adjust sizes of bar charts
+    fig_bars.update_layout(height=800, width=800, 
                       title_text = f"Resultados año {year}", 
                       font=dict(size=14))
 
-    # Mostramos las graficas de barras en streamlit
-    st.plotly_chart(fig_barras) 
+    # Show bar charts in Streamlit
+    st.plotly_chart(fig_bars) 
 
-    # Ajustar los tamaños de las heatmaps
+    # Adjust sizes of heatmaps
     fig_heatmaps.update_layout(height=800, width=800, 
                       title_text = f"Resultados año {year}", 
                       font=dict(size=14))
 
     fig_heatmaps.update_coloraxes(showscale=False)
 
-    # Mostramos las graficas en streamlit
+    # Show heatmaps in Streamlit
     st.plotly_chart(fig_heatmaps) 

@@ -1,11 +1,9 @@
-# %% Librerias
+# %% Libraries
 
 import streamlit as st
-from PIL import Image
-import tensorflow as tf
-import numpy as np
+from models.inference_model import build_model, load_labels, make_prediction
 
-# %% Parametros
+# %% Definitions for streamlit
 
 st.set_page_config(
     page_title = "Clasificación de artículos",
@@ -14,59 +12,42 @@ st.set_page_config(
 
 st.title("🔎 Clasificación de artículos")
 
-# %% Funciones
+# %% Functions
 
-def load_model(path):
+@st.cache_resource
+def load_model(model_path, labels_path):
+    
+    # We load the dictionary of labels
+    dict_labels = load_labels(labels_path)
 
-    return tf.keras.models.load_model(path)
+    # Load the model
+    model = build_model(model_path = model_path, num_classes = len(dict_labels))
 
-def cargar_imagen(col):
+    return model, dict_labels
 
-    # Cargamos el archivo
-    return col.file_uploader("Sube una imagen desde tu ordenador.", type=['png', 'jpg', 'jpeg'])
+def load_image(col):
 
-def procesamiento_imagen(imagen, col):
-
-    # Convertir la imagen a escala de grises
-    imagen = imagen.convert('L')
-
-    # Mostrar la imagen
-    col.image(imagen, caption = 'Imagen cargada.', width = 100)
-
-    # Preprocesar la imagen para el modelo
-    imagen = tf.keras.preprocessing.image.img_to_array(imagen)
-    imagen = tf.image.resize(imagen, (28, 28))
-
-    imagen = tf.expand_dims(imagen, axis=0)
-
-    return imagen
+    # We load the file
+    return col.file_uploader("Sube una imagen desde tu ordenador.", type = ['png', 'jpg', 'jpeg'])
 
 # %% Main
 
 if __name__ == '__main__':
 
-    # Direccion del modelo que vamos a cargar
-    path = 'models/mnist_model.keras'
+    # Address of the model we are going to load.
+    model_path = "models/trained_model/item_classifier"
+    labels_path = "models/trained_model/lista_etiquetas.pkl"
 
-    # Cargamos el modelo
-    model = load_model(path = path)
+    # We load the model
+    model, labels = load_model(model_path, labels_path)
 
-    # Creamos las columnas
+    # Create the columns
     col1, col2 = st.columns(2)
 
-    # Cargamos la imagen que vamos a procesar y predecir su categoria
-    archivo = cargar_imagen(col1)
+    # Load the image we are going to process and predict its category
+    file = load_image(col1)
     
-    if archivo is not None:
-        
-        # Convertimos el archivo en una imagen
-        imagen = Image.open(archivo) 
+    # Perform a prediction
+    if file is not None:
 
-        # Procesamos la imagen
-        imagen = procesamiento_imagen(imagen, col2)
-
-        # Realizar la predicción
-        predicciones = model.predict(imagen)
-
-        # Mostrar las predicciones
-        st.write('Predicción:', np.argmax(predicciones))
+        make_prediction(model, labels, file, col2)

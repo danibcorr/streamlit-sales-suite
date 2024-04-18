@@ -1,8 +1,8 @@
-# %% Librerias
+# %% Libraries
 
 import streamlit as st
 
-# %% Parametros
+# %% Parameters
 
 st.set_page_config(
     page_title = "Inicio",
@@ -11,9 +11,9 @@ st.set_page_config(
 
 st.title("🏠 Inicio")
 
-# %% Funciones
+# %% Functions
 
-def texto_inicio():
+def text_home():
 
     st.markdown("""
         # Bienvenidos
@@ -33,4 +33,4 @@ def texto_inicio():
 
 if __name__ == '__main__':
 
-    texto_inicio()
+    text_home()
