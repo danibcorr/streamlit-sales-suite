@@ -23,7 +23,10 @@ def data_augmentation_layer(inputs, seed = 42):
             layers.RandomRotation(factor = 0.4, seed = seed),
             layers.RandomZoom(height_factor = 0.2, seed = seed),
             layers.RandomWidth(factor = 0.2, seed = seed),
-            layers.RandomTranslation(height_factor = 0.2, width_factor = 0.2, seed = seed)
+            layers.RandomTranslation(height_factor = 0.2, width_factor = 0.2, seed = seed),
+            layers.GaussianNoise(stddev=0.1, seed=seed),
+            layers.RandomBrightness(factor = 0.2, seed=seed),
+            layers.RandomContrast(factor = 0.2, seed=seed)
         ],
         name = "data_augmentation"
     )
@@ -92,10 +95,7 @@ def image_processing(image, col):
     image = tf.image.resize(image, (cg.input_shape[0], cg.input_shape[1]))
 
     # Apply preprocessing depending of the pre-trained model
-    image = preprocess_input(image)
-    image = tf.reshape(image, shape = (1, cg.input_shape[0], cg.input_shape[1], cg.input_shape[-1]))
-
-    return image
+    return tf.reshape(image, shape = (1, cg.input_shape[0], cg.input_shape[1], cg.input_shape[-1]))
 
 # %% Prediction
 
