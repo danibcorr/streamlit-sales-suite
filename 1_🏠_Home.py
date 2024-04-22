@@ -1,7 +1,7 @@
 # %% Libraries
 
 import streamlit as st
-from functions.language_state import StateManager
+from web_functions.language_state import StateManager
 
 # %% Globals
 
@@ -57,11 +57,11 @@ def text_home(state_manager):
 
             This project is a demonstration of my skills in **data analysis**, **data science**, and the use of **artificial intelligence** techniques. I have used a variety of technologies to develop this project, including **Pandas**, **TensorFlow**, **Keras**, and more. My goal is to show how these tools can be used to extract valuable insights from data and solve complex problems.
 
-            ## Data Analysis
+            ## Data analysis
 
             The first feature I want to present is the "**Data Analysis**" page. In this section, you will be able to interact with various graphs that I have generated from datasets. These graphs are not only visually appealing and easy to understand, but they also allow you to obtain certain metrics and insights about the data. My goal with this page is to demonstrate how data analysis can help us better understand the world around us.
 
-            ## Article Classifier
+            ## Article classifier
 
             The second feature is the "**Article Classifier**". This page allows users to upload an image of an article, which is then classified by an artificial intelligence model that I have trained. This model has been trained with TensorFlow and Keras, and is capable of identifying and classifying a variety of different articles. This feature is an example of how artificial intelligence can be used to automate tasks that would normally require human intervention.
         """)
@@ -82,9 +82,13 @@ def text_home(state_manager):
             La segunda funcionalidad es el "**Clasificador de Artículos**". Esta página permite a los usuarios introducir una imagen de un artículo, que luego es clasificada por un modelo de inteligencia artificial que he entrenado. Este modelo ha sido entrenado con TensorFlow y Keras, y es capaz de identificar y clasificar una variedad de artículos diferentes. Esta funcionalidad es un ejemplo de cómo la inteligencia artificial puede ser utilizada para automatizar tareas que normalmente requerirían la intervención humana.
         """)
 
+def main(state_manager: st.session_state.state_manager) -> None:
+
+    select_language(state_manager)
+    text_home(state_manager)
+
 # %% Main
 
 if __name__ == '__main__':
 
-    select_language(state_manager)
-    text_home(state_manager)
+    main(state_manager)

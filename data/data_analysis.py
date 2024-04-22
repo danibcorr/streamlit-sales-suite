@@ -12,6 +12,17 @@ from plotly.subplots import make_subplots
 
 def quantity_sold_monthly(data, year):
 
+    """
+    Calculate and visualize the quantity sold per month for a given year.
+
+    Args:
+        data (pandas.DataFrame): The sales data.
+        year (int): The year to filter the data for.
+
+    Returns:
+        plotly.graph_objs.Figure: The bar chart figure.
+    """
+
     # Filter data for the specified year
     data_year = data[data['Fecha de venta'].dt.year == year]
 
@@ -37,6 +48,17 @@ def quantity_sold_monthly(data, year):
     return fig
 
 def revenue_per_month(data, year):
+
+    """
+    Calculate and visualize the revenue per month for a given year.
+
+    Args:
+        data (pandas.DataFrame): The sales data.
+        year (int): The year to filter the data for.
+
+    Returns:
+        plotly.graph_objs.Figure: The bar chart figure.
+    """
 
     # Filter data for the specified year and create an explicit copy
     data_year = data[data['Fecha de venta'].dt.year == year].copy()
@@ -76,6 +98,17 @@ def revenue_per_month(data, year):
 
 def product_category(data, year):
 
+    """
+    Calculate and visualize the product category distribution for a given year.
+
+    Args:
+        data (pandas.DataFrame): The sales data.
+        year (int): The year to filter the data for.
+
+    Returns:
+        plotly.graph_objs.Figure: The bar chart figure.
+    """
+
     # Filter data for the specified year and create an explicit copy
     data_year = data[data['Fecha de venta'].dt.year == year].copy()
 
@@ -99,6 +132,17 @@ def product_category(data, year):
 
 def gender_status(data, year):
 
+    """
+    Calculate and visualize the gender distribution by product status for a given year.
+
+    Args:
+        data (pandas.DataFrame): The sales data.
+        year (int): The year to filter the data for.
+
+    Returns:
+        plotly.graph_objs.Figure: The heatmap figure.
+    """
+
     # Filter data for the specified year
     data_year = data[data['Fecha de venta'].dt.year == year].copy()
 
@@ -121,6 +165,17 @@ def gender_status(data, year):
 
 def status_country(data, year):
 
+    """
+    Calculate and visualize the product status distribution by country for a given year.
+
+    Args:
+        data (pandas.DataFrame): The sales data.
+        year (int): The year to filter the data for.
+
+    Returns:
+        plotly.graph_objs.Figure: The heatmap figure.
+    """
+
     # Filter data for the specified year
     data_year = data[data['Fecha de venta'].dt.year == year].copy()
 
@@ -141,6 +196,15 @@ def status_country(data, year):
 
 def data_pipeline(df, path, year):
 
+    """
+    Create sales analysis figures for a given year.
+
+    Args:
+        df (pandas.DataFrame): The sales data.
+        path (str): The path to save the figures.
+        year (int): The year to filter the data for.
+    """
+    
     # Create sales analysis figures
     fig_bars = make_subplots(rows=2, cols=2, 
                                 subplot_titles=(f"Cantidad vendida por mes en {year}",
@@ -188,4 +252,4 @@ def data_pipeline(df, path, year):
     fig_heatmaps.update_coloraxes(showscale=False)
 
     # Show heatmaps in Streamlit
-    st.plotly_chart(fig_heatmaps) 
+    st.plotly_chart(fig_heatmaps)

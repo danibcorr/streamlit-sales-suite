@@ -8,8 +8,7 @@ class StateManager:
 
     def __init__(self, language):
 
-        self.language = language
-        st.session_state.language = self.language
+        st.session_state.language = language
 
     def get_language(self):
 

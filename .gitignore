@@ -1,3 +1,4 @@
 datasets
-prototipado
-web/models/trained_model
+prototyping
+models/trained_model
+*/__pycache__/

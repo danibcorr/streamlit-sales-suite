@@ -2,8 +2,8 @@
 
 import streamlit as st
 import pandas as pd
-from functions.data_analysis import data_pipeline
-from functions.language_state import StateManager
+from web_functions.language_state import StateManager
+from data.data_analysis import data_pipeline
 
 # %% Definitions for streamlit
 
@@ -28,42 +28,50 @@ elif (language == 'Spanish') or (language == 'Español'):
 # %% Functions
 
 @st.cache_data
-def load_data(path):
+def load_data(path: str) -> tuple:
 
-    # We read the CSV file with the data
+    """
+    Load data from a CSV file and convert the 'Fecha de venta' column to datetime format.
+
+    Args:
+        path (str): The path to the CSV file.
+
+    Returns:
+        tuple: A tuple containing the loaded DataFrame and a list of available years.
+    """
+
     df = pd.read_csv(path)
-
-    # We convert the 'Fecha de venta' ('Date of sale') column to datetime format
     df['Fecha de venta'] = pd.to_datetime(df['Fecha de venta'], dayfirst = True)
-
-    # Get the available years
     list_aval_years = df["Fecha de venta"].dt.year.unique()
 
     return df, list_aval_years
 
-# %% Main
+def main(dataset_path: str) -> None:
 
-if __name__ == '__main__':
+    """
+    Main function to load data and perform data analysis.
 
-    # Directory of the file for data retrieval
-    path = "../datasets/Datos Ventas.csv"
+    Args:
+        dataset_path (str): The path to the dataset file.
+    """
 
-    # We load the data according to the indicated path
-    df, list_aval_years = load_data(path)
-
-    # Selectbox allows you to make a selection from among several possibilities
-    # Now we want to make the selection according to the available years of the dataset
+    df, list_aval_years = load_data(dataset_path)
     language = state_manager.get_language()
 
     if (language == 'English') or (language == 'Inglés'):
-    
+
         year_label = 'Select a year to analyze the data'
-    
+
     elif (language == 'Spanish') or (language == 'Español'):
-    
+
         year_label = 'Elige un año para analizar los datos'
 
     year_selected = st.selectbox(year_label, list_aval_years)
+    data_pipeline(df, dataset_path, year_selected)
+
+# %% Main
+
+if __name__ == '__main__':
     
-    # Pipeline for data retrieval and visualization
-    data_pipeline(df, path, year_selected)
+    dataset_path = "./datasets/Datos Ventas.csv"
+    main(dataset_path)
