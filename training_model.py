@@ -17,10 +17,10 @@ from sklearn.utils import class_weight
 from keras_cv.layers import CutMix, ChannelShuffle, RandomCutout, RandAugment
 from tqdm import tqdm
 
-from architecture import build_model
-from layers.agc import adaptive_clip_grad
-from layers.lr_scheduler import warmupcosine_scheduler
-import config as cg
+from models.architecture import build_model
+from models.layers.agc import adaptive_clip_grad
+from models.layers.lr_scheduler import warmupcosine_scheduler
+import models.config as cg
 
 # %% Let's use mixed precision to reduce memory consumption.
 

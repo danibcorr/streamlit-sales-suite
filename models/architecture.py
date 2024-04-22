@@ -3,7 +3,7 @@
 import tensorflow as tf
 from tensorflow.keras.applications import ConvNeXtSmall
 from tensorflow.keras import layers
-from layers.data_augmentation import data_augmentation_layer
+from models.layers.data_augmentation import data_augmentation_layer
 
 # %% Functions
 

@@ -1,7 +1,7 @@
 # %% Libraries
 
 import tensorflow as tf
-from layers.gadamw import GCAdamW
+from models.layers.gadamw import GCAdamW
 
 # %% Classes dataset
 
