@@ -16,8 +16,8 @@ language = state_manager.get_language()
 
 if (language == 'English') or (language == 'Inglés'):
 
-    st.set_page_config(page_title = "Item Classifier", page_icon = "🔎")
-    st.title("🔎 Item Classifier")
+    st.set_page_config(page_title = "Item classifier", page_icon = "🔎")
+    st.title("🔎 Item classifier")
 
 elif (language == 'Spanish') or (language == 'Español'):
 

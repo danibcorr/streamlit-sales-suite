@@ -45,7 +45,7 @@ def mlflow_connection():
     """
 
     # Set the tracking server URI for logging
-    mlflow.set_tracking_uri(uri="http://127.0.0.1:8080")
+    mlflow.set_tracking_uri(uri = "http://127.0.0.1:8080")
 
     # Create a new MLflow Experiment
     mlflow.set_experiment("Item Classifier")

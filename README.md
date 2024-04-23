@@ -6,7 +6,7 @@
 
 This project is a comprehensive data analysis and visualization platform using Python, Pandas, NumPy, and deep learning techniques. It includes a convolutional neural network (CNN) model for image classification, utilizing computer vision techniques to obtain classes from different items.
 
-**🗂️ Directory Structure**
+**🗂️ Directory structure**
 -------------------------
 
 The project has a well-organized directory structure with various folders and files associated with data analysis, modeling, and web functions.
@@ -28,7 +28,7 @@ The project has a well-organized directory structure with various folders and fi
 + **web_functions**
   * `language_State.py`: A script that keeps track of the selected language for page translation.
 
-**🚀 Using this Repo**
+**🚀 Using this repo**
 ---------------------
 
 To use this repository, follow these steps:

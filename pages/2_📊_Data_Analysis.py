@@ -3,7 +3,7 @@
 import streamlit as st
 import pandas as pd
 from web_functions.language_state import StateManager
-from data.data_analysis import data_pipeline
+from data.data_analysis import data_pipeline, compare_years
 
 # %% Definitions for streamlit
 
@@ -17,12 +17,12 @@ language = state_manager.get_language()
 
 if (language == 'English') or (language == 'Inglés'):
 
-    st.set_page_config(page_title = "Data Analysis", page_icon = "📊")
-    st.title("📊 Data Analysis")
+    st.set_page_config(page_title = "Data analysis", page_icon = "📊", layout="wide")
+    st.title("📊 Data analysis")
 
 elif (language == 'Spanish') or (language == 'Español'):
     
-    st.set_page_config(page_title = "Análisis de datos", page_icon = "📊")
+    st.set_page_config(page_title = "Análisis de datos", page_icon = "📊", layout="wide")
     st.title("📊 Análisis de datos")
 
 # %% Functions
@@ -61,13 +61,36 @@ def main(dataset_path: str) -> None:
     if (language == 'English') or (language == 'Inglés'):
 
         year_label = 'Select a year to analyze the data'
+        compare_label = 'Compare years'
 
     elif (language == 'Spanish') or (language == 'Español'):
 
         year_label = 'Elige un año para analizar los datos'
+        compare_label = 'Comparar años'
 
-    year_selected = st.selectbox(year_label, list_aval_years)
-    data_pipeline(df, dataset_path, year_selected)
+    year_selected = st.sidebar.selectbox(year_label, list_aval_years)
+    compare_years_checkbox = st.sidebar.checkbox(compare_label)
+
+    if compare_years_checkbox:
+
+        if (language == 'English') or (language == 'Inglés'):
+
+            year1_label = 'Select the first year'
+            year2_label = 'Select the second year'
+
+        elif (language == 'Spanish') or (language == 'Español'):
+
+            year1_label = 'Selecciona el primer año'
+            year2_label = 'Selecciona el segundo año'
+
+        year1 = st.sidebar.selectbox(year1_label, list_aval_years)
+        year2 = st.sidebar.selectbox(year2_label, list_aval_years)
+
+        compare_years(df, year1, year2)
+
+    else:
+
+        data_pipeline(df, dataset_path, year_selected)
 
 # %% Main
 
