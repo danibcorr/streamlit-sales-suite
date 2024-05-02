@@ -1,29 +1,24 @@
 # %% Libraries
 
 import streamlit as st
+import pandas as pd
 from models.inference_model import load_model, load_labels, make_prediction
 from web_functions.language_state import StateManager
+from deep_translator import GoogleTranslator
 
 # %% Definitions for streamlit
 
-if 'language' not in st.session_state:
-    
-    st.session_state.language = 'English'
+translator = GoogleTranslator(source = 'en', target = 'es')
+language_manager = StateManager()
+language = language_manager.language
 
-state_manager = StateManager(language=st.session_state.language)
+page_title = "Item classifier"
+page_title = translator.translate(page_title) if language != 'English' else page_title
+page_icon = "🔎"
 
-language = state_manager.get_language()
+st.set_page_config(page_title = page_title, page_icon = page_icon, layout = "wide")
+st.title(f"{page_icon} {page_title}")
 
-if (language == 'English') or (language == 'Inglés'):
-
-    st.set_page_config(page_title = "Item classifier", page_icon = "🔎")
-    st.title("🔎 Item classifier")
-
-elif (language == 'Spanish') or (language == 'Español'):
-
-    st.set_page_config(page_title = "Clasificación de artículos", page_icon = "🔎")
-    st.title("🔎 Clasificación de artículos")
-    
 # %% Functions
 
 @st.cache_resource
@@ -45,30 +40,59 @@ def load_model_inference(model_path: str, labels_path: str) -> tuple:
 
     return model, dict_labels
 
-def load_image(col, language: str) -> st.columns:
+def load_image(col) -> st.columns:
 
     """
-    Create a file uploader for the given column and language.
+    Create a file uploader for the given column.
 
     Args:
         col: The Streamlit column to create the uploader in.
-        language (str): The language to use for the uploader label.
 
     Returns:
         st.uploaded_file_manager: The file uploader object.
     """
 
-    if (language == 'English') or (language == 'Inglés'):
-
-        label = "Upload an image from your computer."
-
-    elif (language == 'Spanish') or (language == 'Español'):
-
-        label = "Sube una imagen desde tu ordenador."
+    label = "Upload an image from your computer."
+    label = label if language == 'English' else translator.translate(label)
 
     return col.file_uploader(label, type = ['png', 'jpg', 'jpeg'])
 
-def main(model_path: str, labels_path: str) -> None:
+def data_filling(dataset_path: str, predictions_string: str) -> None:
+    
+    # Read the CSV file
+    df = pd.read_csv(dataset_path)
+    
+    # Get the column names
+    column_names = df.columns.tolist()
+
+    # Create a form with input fields for each column
+    with st.form("my_form"):
+
+        inputs = {}
+        
+        for column in column_names:
+
+            if column == "Tipo producto":
+            
+                inputs[column] = st.text_input(column, value = predictions_string)
+            
+            else:
+            
+                inputs[column] = st.text_input(column)
+        
+        submitted = st.form_submit_button("OK")
+
+    # If the form is submitted, add the new row to the dataframe
+    if submitted:
+    
+        new_row = {k: [v] for k, v in inputs.items()}
+        new_row = pd.DataFrame(new_row)
+        df = pd.concat([df, new_row], ignore_index=True)
+        df.to_csv(dataset_path, index=False)
+
+    st.dataframe(df, use_container_width=True)
+
+def main(model_path: str, labels_path: str, dataset_path: str) -> None:
     
     """
     Main function to load the model and perform image classification.
@@ -80,17 +104,19 @@ def main(model_path: str, labels_path: str) -> None:
 
     model, labels = load_model_inference(model_path, labels_path)
     col1, col2 = st.columns(2)
-    language = state_manager.get_language()
-    file = load_image(col1, language)
+    file = load_image(col1)
 
     if file is not None:
 
-        make_prediction(model, labels, file, col2)
+        predictions_string = make_prediction(model, labels, file, col2)
+        data_filling(dataset_path, predictions_string)
 
 # %% Main
 
 if __name__ == '__main__':
 
+    dataset_path = "./datasets/Datos Ventas.csv"
     model_path = "models/trained_model/item_classifier"
     labels_path = "models/trained_model/dict_labels.pkl"
-    main(model_path, labels_path)
+
+    main(model_path, labels_path, dataset_path)

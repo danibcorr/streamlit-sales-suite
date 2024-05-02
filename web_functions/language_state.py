@@ -6,14 +6,19 @@ import streamlit as st
 
 class StateManager:
 
-    def __init__(self, language):
+    def __init__(self):
 
-        st.session_state.language = language
+        if 'language' not in st.session_state:
 
-    def get_language(self):
+            # English will be the default language
+            st.session_state.language = 'English'  
+
+    @property
+    def language(self):
 
         return st.session_state.language
 
-    def set_language(self, language):
+    @language.setter
+    def language(self, value):
 
-        st.session_state.language = language
+        st.session_state.language = value

@@ -2,28 +2,22 @@
 
 import streamlit as st
 import pandas as pd
-from web_functions.language_state import StateManager
 from data.data_analysis import data_pipeline, compare_years
+from web_functions.language_state import StateManager
+from deep_translator import GoogleTranslator
 
-# %% Definitions for streamlit
+# %% Parameters for Streamlit
 
-if 'language' not in st.session_state:
-    
-    st.session_state.language = 'English'
+translator = GoogleTranslator(source = 'en', target = 'es')
+language_manager = StateManager()
+language = language_manager.language
 
-state_manager = StateManager(language=st.session_state.language)
+page_title = "Data analysis"
+page_title = translator.translate(page_title) if language != 'English' else page_title
+page_icon = "📊"
 
-language = state_manager.get_language()
-
-if (language == 'English') or (language == 'Inglés'):
-
-    st.set_page_config(page_title = "Data analysis", page_icon = "📊", layout="wide")
-    st.title("📊 Data analysis")
-
-elif (language == 'Spanish') or (language == 'Español'):
-    
-    st.set_page_config(page_title = "Análisis de datos", page_icon = "📊", layout="wide")
-    st.title("📊 Análisis de datos")
+st.set_page_config(page_title = page_title, page_icon = page_icon, layout = "wide")
+st.title(f"{page_icon} {page_title}")
 
 # %% Functions
 
@@ -56,32 +50,21 @@ def main(dataset_path: str) -> None:
     """
 
     df, list_aval_years = load_data(dataset_path)
-    language = state_manager.get_language()
 
-    if (language == 'English') or (language == 'Inglés'):
-
-        year_label = 'Select a year to analyze the data'
-        compare_label = 'Compare years'
-
-    elif (language == 'Spanish') or (language == 'Español'):
-
-        year_label = 'Elige un año para analizar los datos'
-        compare_label = 'Comparar años'
+    year_label = 'Select a year to analyze the data'
+    year_label = year_label if language == 'English' else translator.translate(year_label)
+    compare_label = 'Compare years'
+    compare_label = compare_label if language == 'English' else translator.translate(compare_label)
 
     year_selected = st.sidebar.selectbox(year_label, list_aval_years)
     compare_years_checkbox = st.sidebar.checkbox(compare_label)
 
     if compare_years_checkbox:
 
-        if (language == 'English') or (language == 'Inglés'):
-
-            year1_label = 'Select the first year'
-            year2_label = 'Select the second year'
-
-        elif (language == 'Spanish') or (language == 'Español'):
-
-            year1_label = 'Selecciona el primer año'
-            year2_label = 'Selecciona el segundo año'
+        year1_label = 'Select the first year'
+        year1_label = year1_label if language == 'English' else translator.translate(year1_label)
+        year2_label = 'Select the second year'
+        year2_label = year2_label if language == 'English' else translator.translate(year2_label)
 
         year1 = st.sidebar.selectbox(year1_label, list_aval_years)
         year2 = st.sidebar.selectbox(year2_label, list_aval_years)

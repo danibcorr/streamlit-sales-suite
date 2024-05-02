@@ -59,12 +59,8 @@ COLOR_BAR_2 = 'rgb(175, 238, 238)'
 
 # %% Definitions for streamlit
 
-if 'language' not in st.session_state:
-    
-    st.session_state.language = 'English'
-
-state_manager = StateManager(language=st.session_state.language)
-language = state_manager.get_language()
+language_manager = StateManager()
+language = language_manager.language
 lang_key = 'English' if language == 'English' or language == 'Inglés' else 'Spanish'
 
 # %% Functions
@@ -247,7 +243,6 @@ def data_pipeline(df: pd.DataFrame, path: str, year: int) -> None:
 
     # Obtain the translations
     translations = translation(year)
-    print(lang_key)
 
     # Create sales analysis figures
     fig_bars = make_subplots(rows = 2, cols = 4, 
