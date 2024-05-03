@@ -67,7 +67,10 @@ def make_prediction(model: tf.keras.Model, labels: dict, file: str, col2: st.col
     if language in ['English', 'Inglés']:
     
         predictions_string = GoogleTranslator(source = 'es', target = 'en').translate(text = og_predictions_string)
-    
-    st.write(title, predictions_string)
+        st.write(title, predictions_string)
+
+    else:
+
+        st.write(title, og_predictions_string)
 
     return og_predictions_string

@@ -8,62 +8,61 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from web_functions.language_state import StateManager
-
-# %% Translations
-
-def translation(year: int, year1: int = 0, year2: int = 0) -> dict:
-
-    translations = {
-        'English': {
-            'fig_bars_titles': (f"Quantity sold per month in {year}", None, f'Quantity sold by category in {year}',
-                                None, f'Money made per month in {year}'),
-            'fig_heatmaps_titles': (f'State/country ratio {year}', f'Gender/state ratio {year}',
-                                    None, f'Money earned per month in {year}'),
-            'fig_bars_first_title': f"Results year {year}",
-            'title_quantity': f"Quantity sold per month in {year1} and {year2}",
-            'title_revenue': f"Amount of money earned per month in {year1} and {year2}",
-            'title_categories': f"Amount sold per category in {year1} and {year2}",
-            'title_heatmap_1': [f"State/country ratio in {year1}", f"State/country ratio in {year2}"],
-            'title_heatmap_2': [f"Gender/State Ratio in {year1}", f"Gender/State Ratio in {year2}"],
-            'xaxis_title': "Month",
-            'xaxis_title_2': "Category",
-            'yaxis_title': "Quantity sold",
-            'yaxis_title_2': "Profit",
-            'legend_title': "Year"
-        },
-        'Spanish': {
-            'fig_bars_titles': (f"Cantidad vendida por mes en {year}", None, f'Cantidad vendida por categoria en {year}',
-                                None, f'Dinero obtenido por mes en {year}'),
-            'fig_heatmaps_titles': (f"Relación estado/país {year}", f'Relación género/estado {year}',
-                                    None, f'Dinero obtenido por mes en {year}'),
-            'fig_bars_first_title': f"Resultados año {year}",
-            'title_quantity': f"Cantidad vendida por mes en {year1} y {year2}",
-            'title_revenue': f"Dinero obtenido por mes en {year1} y {year2}",
-            'title_categories': f"Cantidad vendida por categoría en {year1} y {year2}",
-            'title_heatmap_1': [f"Relación estado/país en {year1}", f"Relación estado/país en {year2}"],
-            'title_heatmap_2': [f"Relación género/estado en {year1}", f"Relación género/estado en {year2}"],
-            'xaxis_title': "Mes",
-            'xaxis_title_2': "Categoria",
-            'yaxis_title': "Cantidad vendida",
-            'yaxis_title_2': "Ganancias",
-            'legend_title': "Año"
-        }
-    }
-
-    return translations
+from deep_translator import GoogleTranslator
 
 # %% Globals
 
 COLOR_BAR_1 = 'rgb(255, 224, 189)'
 COLOR_BAR_2 = 'rgb(175, 238, 238)'
 
-# %% Definitions for streamlit
+# %% Parameters for Streamlit
 
-language_manager = StateManager()
-language = language_manager.language
-lang_key = 'English' if language == 'English' or language == 'Inglés' else 'Spanish'
+# Create a Google translator object to translate text from English to Spanish
+translator = GoogleTranslator(source = 'en', target = 'es')
 
 # %% Functions
+
+def translation(year: int, year1: int = 0, year2: int = 0) -> dict:
+
+    """
+    Returns a dictionary of translations for a given year and optional year1 and year2.
+
+    Args:
+        year (int): The year for which translations are needed.
+        year1 (int, optional): The first year for comparison. Defaults to 0.
+        year2 (int, optional): The second year for comparison. Defaults to 0.
+
+    Returns:
+        dict: A dictionary containing translations for English and Spanish languages.
+    """
+
+    # Define a dictionary to store translations for different languages
+    translations = {
+        
+        # Figure titles for bar charts
+        'fig_bars_titles_1': f"Quantity sold per month in {year}",
+        'fig_bars_titles_2': f'Quantity sold by category in {year}',
+        'fig_bars_titles_3': f'Money made per month in {year}',
+
+        # Figure titles for heatmaps
+        'fig_heatmaps_titles_1': f'State/country ratio {year}',
+        'fig_heatmaps_titles_2': f'Gender/state ratio {year}',
+
+        # Other titles and labels
+        'fig_bars_first_title': f"Results year {year}",
+        'title_quantity': f"Quantity sold per month in {year1} and {year2}",
+        'title_revenue': f"Amount of money earned per month in {year1} and {year2}",
+        'title_categories': f"Amount sold per category in {year1} and {year2}",
+        'title_heatmap_1': [f"State/country ratio in {year1}", f"State/country ratio in {year2}"],
+        'title_heatmap_2': [f"Gender/State Ratio in {year1}", f"Gender/State Ratio in {year2}"],
+        'xaxis_title': "Month",
+        'xaxis_title_2': "Category",
+        'yaxis_title': "Quantity sold",
+        'yaxis_title_2': "Profit",
+        'legend_title': "Year"
+    }
+
+    return translations
 
 def quantity_sold_monthly(data: pd.DataFrame, year: int) -> plotly.graph_objects.Figure:
 
@@ -89,12 +88,12 @@ def quantity_sold_monthly(data: pd.DataFrame, year: int) -> plotly.graph_objects
     num_sales_per_month = np.bincount(dates_per_month.factorize()[0])
 
     # Create bar chart with Plotly
-    fig = px.bar(data_year, x=x_axis.astype(str), y=num_sales_per_month,
-                 template='plotly_dark', text=num_sales_per_month)
+    fig = px.bar(data_year, x = x_axis.astype(str), y = num_sales_per_month,
+                 template = 'plotly_dark', text = num_sales_per_month)
     
     # Show values of each bar on top of the bar
-    fig.update_traces(texttemplate='%{text:.2s}', textposition='outside')
-    fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', autosize=True)
+    fig.update_traces(texttemplate = '%{text:.2s}', textposition = 'outside')
+    fig.update_layout(uniformtext_minsize = 8, uniformtext_mode = 'hide', autosize = True)
 
     return fig
 
@@ -134,12 +133,12 @@ def revenue_per_month(data: pd.DataFrame, year: int) -> plotly.graph_objects.Fig
     revenue_obtained = revenue_per_month.values
 
     # Create bar chart with Plotly
-    fig = px.bar(data_year, x=x_axis.astype(str), y=revenue_obtained,
-                 template='plotly_dark', text=revenue_obtained)
+    fig = px.bar(data_year, x = x_axis.astype(str), y = revenue_obtained,
+                 template = 'plotly_dark', text = revenue_obtained)
     
     # Show values of each bar on top of the bar
-    fig.update_traces(texttemplate='%{text:.2s}', textposition='outside')
-    fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', autosize=True)
+    fig.update_traces(texttemplate = '%{text:.2s}', textposition = 'outside')
+    fig.update_layout(uniformtext_minsize = 8, uniformtext_mode = 'hide', autosize = True)
     
     return fig
 
@@ -164,12 +163,12 @@ def product_category(data: pd.DataFrame, year: int) -> plotly.graph_objects.Figu
     num_products_sold = np.bincount(data_year['Tipo producto'].factorize()[0])
 
     # Create bar chart with Plotly
-    fig = px.bar(data, x=categories.astype(str), y=num_products_sold,
-                 template='plotly_dark', text=num_products_sold)
+    fig = px.bar(data, x = categories.astype(str), y = num_products_sold,
+                 template = 'plotly_dark', text = num_products_sold)
 
     # Show values of each bar on top of the bar
-    fig.update_traces(texttemplate='%{text:.2s}', textposition='outside')
-    fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', autosize=True)
+    fig.update_traces(texttemplate = '%{text:.2s}', textposition = 'outside')
+    fig.update_layout(uniformtext_minsize = 8, uniformtext_mode = 'hide', autosize = True)
 
     return fig
 
@@ -196,7 +195,7 @@ def gender_status(data: pd.DataFrame, year: int) -> plotly.graph_objects.Figure:
     })
 
     # Create heatmap
-    return px.imshow(df_2dhist, text_auto=True)
+    return px.imshow(df_2dhist, text_auto = True)
 
 def status_country(data: pd.DataFrame, year: int) -> plotly.graph_objects.Figure:
 
@@ -221,9 +220,9 @@ def status_country(data: pd.DataFrame, year: int) -> plotly.graph_objects.Figure
     })
 
     # Create heatmap
-    return px.imshow(df_2dhist, text_auto=True)
+    return px.imshow(df_2dhist, text_auto = True)
 
-def data_pipeline(df: pd.DataFrame, path: str, year: int) -> None:
+def data_pipeline(df: pd.DataFrame, path: str, year: int, language: str) -> None:
     
     """
     Generate sales analysis and heatmap figures for a given year.
@@ -232,26 +231,37 @@ def data_pipeline(df: pd.DataFrame, path: str, year: int) -> None:
     The heatmaps show relationships between state/country and gender/state.
     The figures are displayed in Streamlit using `st.plotly_chart`.
 
-    Parameters:
-    df (pd.DataFrame): Input data frame containing sales data.
-    path (str): Path to save the figures (not used in this implementation).
-    year (int): Year for which to generate the analysis figures.
+    Args:
+        df (pd.DataFrame): Input data frame containing sales data.
+        path (str): Path to save the figures (not used in this implementation).
+        year (int): Year for which to generate the analysis figures.
 
     Returns:
-    None
+        None
     """
+
+    lang_key = 'English' if language == 'English' or language == 'Inglés' else 'Spanish'
 
     # Obtain the translations
     translations = translation(year)
 
     # Create sales analysis figures
     fig_bars = make_subplots(rows = 2, cols = 4, 
-                            subplot_titles = translations[lang_key]['fig_bars_titles'],
+                            subplot_titles = (
+                                translator.translate(translations['fig_bars_titles_1']) if language!= 'English' else translations['fig_bars_titles_1'],
+                                None,
+                                translator.translate(translations['fig_bars_titles_2']) if language!= 'English' else translations['fig_bars_titles_2'],
+                                None,
+                                translator.translate(translations['fig_bars_titles_3']) if language!= 'English' else translations['fig_bars_titles_3'],
+                            ),
                             specs = [[{"colspan": 2}, {}, {"colspan":2,"rowspan":2}, {}], [{"colspan": 2}, {}, {}, {}]])
 
     # Create heatmap analysis figures
     fig_heatmaps = make_subplots(rows = 2, cols = 3,
-                                subplot_titles = translations[lang_key]['fig_heatmaps_titles'],
+                                subplot_titles = (
+                                    translator.translate(translations['fig_heatmaps_titles_1']) if language!= 'English' else translations['fig_heatmaps_titles_1'],
+                                    translator.translate(translations['fig_heatmaps_titles_2']) if language!= 'English' else translations['fig_heatmaps_titles_2']
+                                ),
                                 specs = [[{"rowspan": 2}, {}, None], [{}, None, None]],
                                 horizontal_spacing = 0.15)
 
@@ -265,26 +275,26 @@ def data_pipeline(df: pd.DataFrame, path: str, year: int) -> None:
     graph_gender_status = gender_status(df, year)
     
     # Add traces of bar charts
-    fig_bars.add_trace(graph_sales['data'][0], row=1, col=1)
-    fig_bars.add_trace(graph_revenue['data'][0], row=2, col=1)
-    fig_bars.add_trace(graph_categories['data'][0], row=1, col=3)
+    fig_bars.add_trace(graph_sales['data'][0], row = 1, col = 1)
+    fig_bars.add_trace(graph_revenue['data'][0], row = 2, col = 1)
+    fig_bars.add_trace(graph_categories['data'][0], row = 1, col = 3)
 
     # Add traces of heatmaps
-    fig_heatmaps.add_trace(graph_status_country['data'][0], row=1, col=1)
-    fig_heatmaps.add_trace(graph_gender_status['data'][0], row=1, col=2)
+    fig_heatmaps.add_trace(graph_status_country['data'][0], row = 1, col = 1)
+    fig_heatmaps.add_trace(graph_gender_status['data'][0], row = 1, col = 2)
 
     # Adjust sizes of bar charts
-    fig_bars.update_layout(height=800,
+    fig_bars.update_layout(height = 800,
                            # Set width to None to adapt to Streamlit page width
                            width = None,  
-                           title_text = translations[lang_key]['fig_bars_first_title'],
+                           title_text = translator.translate(translations['fig_bars_first_title']) if language!= 'English' else translations['fig_bars_first_title'],
                            # Center the title
                            title_x = 0.5,  
                            font = dict(size = 14))
 
     # Show bar charts in Streamlit
     # Set use_container_width to True to adapt to Streamlit page width
-    st.plotly_chart(fig_bars, use_container_width=True)  
+    st.plotly_chart(fig_bars, use_container_width = True)  
 
     # Adjust sizes of heatmaps
     fig_heatmaps.update_layout(height = 800, 
@@ -293,9 +303,9 @@ def data_pipeline(df: pd.DataFrame, path: str, year: int) -> None:
     fig_heatmaps.update_coloraxes(showscale = False)
 
     # Show heatmaps in Streamlit
-    st.plotly_chart(fig_heatmaps, use_container_width=True)  
+    st.plotly_chart(fig_heatmaps, use_container_width = True)  
 
-def compare_years(data: pd.DataFrame, year1: int, year2: int) -> None:
+def compare_years(data: pd.DataFrame, year1: int, year2: int, language: str) -> None:
     
     """
     Compare sales data between two years.
@@ -304,14 +314,16 @@ def compare_years(data: pd.DataFrame, year1: int, year2: int) -> None:
     The heatmaps show relationships between state/country and gender/state for each year.
     The figures are displayed in Streamlit using `st.plotly_chart`.
 
-    Parameters:
-    data (pd.DataFrame): Input data frame containing sales data.
-    year1 (int): First year to compare.
-    year2 (int): Second year to compare.
+    Args:
+        data (pd.DataFrame): Input data frame containing sales data.
+        year1 (int): First year to compare.
+        year2 (int): Second year to compare.
 
     Returns:
-    None
+        None
     """
+
+    lang_key = 'English' if language == 'English' or language == 'Inglés' else 'Spanish'
 
     # Obtain the translations
     translations = translation(year = None, year1 = year1, year2 = year2)
@@ -344,14 +356,20 @@ def compare_years(data: pd.DataFrame, year1: int, year2: int) -> None:
     fig_overlapped_categories.add_bar(name = f"{year2}", x = fig_year2_categories['data'][0]['x'], y = fig_year2_categories['data'][0]['y'], marker_color = COLOR_BAR_2)
 
     # Add titles
-    fig_overlapped_quantity.update_layout(title_text = translations[lang_key]['title_quantity'], xaxis_title = translations[lang_key]['xaxis_title'], 
-                                            yaxis_title = translations[lang_key]['yaxis_title'], legend_title = translations[lang_key]['legend_title'])
+    fig_overlapped_quantity.update_layout(title_text = translator.translate(translations['title_quantity']) if language!= 'English' else translations['title_quantity'], 
+                                            xaxis_title = translator.translate(translations['xaxis_title']) if language!= 'English' else translations['xaxis_title'], 
+                                            yaxis_title = translator.translate(translations['yaxis_title']) if language!= 'English' else translations['yaxis_title'], 
+                                            legend_title = translator.translate(translations['legend_title']) if language!= 'English' else translations['legend_title'])
 
-    fig_overlapped_revenue.update_layout(title_text = translations[lang_key]['title_revenue'], xaxis_title = translations[lang_key]['xaxis_title'], 
-                                            yaxis_title = translations[lang_key]['yaxis_title_2'], legend_title = translations[lang_key]['legend_title'])
+    fig_overlapped_revenue.update_layout(title_text = translator.translate(translations['title_revenue']) if language!= 'English' else translations['title_revenue'], 
+                                            xaxis_title = translator.translate(translations['xaxis_title']) if language!= 'English' else translations['xaxis_title'], 
+                                            yaxis_title = translator.translate(translations['yaxis_title_2']) if language!= 'English' else translations['yaxis_title_2'], 
+                                            legend_title = translator.translate(translations['legend_title']) if language!= 'English' else translations['legend_title'])
 
-    fig_overlapped_categories.update_layout(title_text = translations[lang_key]['title_categories'], xaxis_title = translations[lang_key]['xaxis_title_2'], 
-                                            yaxis_title = translations[lang_key]['yaxis_title'], legend_title = translations[lang_key]['legend_title'])
+    fig_overlapped_categories.update_layout(title_text = translator.translate(translations['title_categories']) if language!= 'English' else translations['title_categories'], 
+                                            xaxis_title = translator.translate(translations['xaxis_title_2']) if language!= 'English' else translations['xaxis_title_2'], 
+                                            yaxis_title = translator.translate(translations['yaxis_title']) if language!= 'English' else translations['yaxis_title'], 
+                                            legend_title = translator.translate(translations['legend_title']) if language!= 'English' else translations['legend_title'])
 
     # Show overlapped figures in Streamlit
     st.plotly_chart(fig_overlapped_quantity, use_container_width = True)
@@ -360,13 +378,13 @@ def compare_years(data: pd.DataFrame, year1: int, year2: int) -> None:
 
     # Create heatmap analysis figures with increased spacing
     fig_heatmaps_1 = make_subplots(rows = 2, cols = 2,
-                                   subplot_titles = translations[lang_key]['title_heatmap_1'],
+                                   subplot_titles = translator.translate(translations['title_heatmap_1']) if language!= 'English' else translations['title_heatmap_1'],
                                    specs = [[{"rowspan": 2}, {"rowspan": 2}], [{}, {}]],
                                    vertical_spacing = 0.25,
                                    horizontal_spacing = 0.25)
 
     fig_heatmaps_2 = make_subplots(rows = 1, cols = 2,
-                                   subplot_titles = translations[lang_key]['title_heatmap_2'],
+                                   subplot_titles = translator.translate(translations['title_heatmap_2']) if language!= 'English' else translations['title_heatmap_2'],
                                    specs = [[{}, {}]],
                                    vertical_spacing = 0.25,
                                    horizontal_spacing = 0.25)

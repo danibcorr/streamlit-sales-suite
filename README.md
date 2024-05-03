@@ -4,7 +4,7 @@
 **📄 Summary**
 -----------
 
-This project is a comprehensive data analysis and visualization platform using Python, Pandas, NumPy, and deep learning techniques. It includes a convolutional neural network (CNN) model for image classification, utilizing computer vision techniques to obtain classes from different items.
+This project serves as an all-encompassing platform for data analysis and visualization, leveraging the power of Python and advanced deep learning methodologies. It incorporates a Convolutional Neural Network (CNN) model specifically designed for item classification.
 
 **🗂️ Directory structure**
 -------------------------
