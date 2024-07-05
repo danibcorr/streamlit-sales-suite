@@ -58,7 +58,6 @@ def unitwise_norm(x: tf.Tensor) -> tf.Tensor:
 
     return compute_norm(x, axis, keepdims)
 
-
 def adaptive_clip_grad(parameters: list or tf.Tensor, gradients: list or tf.Tensor, clip_factor: float = 0.01, eps: float = 1e-3) -> list or tf.Tensor:
 
     """

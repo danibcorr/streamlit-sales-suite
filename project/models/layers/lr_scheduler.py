@@ -5,7 +5,7 @@ import numpy as np
 
 # %% Class definition
 
-@tf.keras.saving.register_keras_serializable(package = 'WarmUpCosine')
+@keras.utils.register_keras_serializable(package = 'WarmUpCosine')
 class WarmUpCosine(tf.keras.optimizers.schedules.LearningRateSchedule):
 
     """
@@ -92,7 +92,6 @@ class WarmUpCosine(tf.keras.optimizers.schedules.LearningRateSchedule):
         }
 
         return config
-
 
 def warmupcosine_scheduler(X_train: np.ndarray, batch_size: int, num_epochs: int,
                            warmup_rate: float = 0.15, lr_start: float = 1e-5, lr_max: float = 1e-3) -> WarmUpCosine:
