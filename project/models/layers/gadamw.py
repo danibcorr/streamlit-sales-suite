@@ -4,7 +4,7 @@ import tensorflow as tf
 
 # %% Class definition
 
-@keras.utils.register_keras_serializable(package = 'GCAdamW')
+@tf.keras.utils.register_keras_serializable(package = 'GCAdamW')
 class GCAdamW(tf.keras.optimizers.AdamW):
 
     """

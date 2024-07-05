@@ -5,7 +5,7 @@ import numpy as np
 
 # %% Class definition
 
-@keras.utils.register_keras_serializable(package = 'WarmUpCosine')
+@tf.keras.utils.register_keras_serializable(package = 'WarmUpCosine')
 class WarmUpCosine(tf.keras.optimizers.schedules.LearningRateSchedule):
 
     """
