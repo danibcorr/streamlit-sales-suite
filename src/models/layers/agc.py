@@ -1,11 +1,7 @@
-# %% Libraries
-
 import tensorflow as tf
 
-# %% Functions
 
 def compute_norm(x: tf.Tensor, axis: int or list, keepdims: bool) -> tf.Tensor:
-
     """
     Compute the norm of a tensor.
 
@@ -18,10 +14,10 @@ def compute_norm(x: tf.Tensor, axis: int or list, keepdims: bool) -> tf.Tensor:
         tf.Tensor: The norm of the input tensor.
     """
 
-    return tf.math.reduce_sum(x ** 2, axis = axis, keepdims = keepdims) ** 0.5
+    return tf.math.reduce_sum(x**2, axis=axis, keepdims=keepdims) ** 0.5
+
 
 def unitwise_norm(x: tf.Tensor) -> tf.Tensor:
-
     """
     Compute the unit-wise norm of a tensor.
 
@@ -35,19 +31,19 @@ def unitwise_norm(x: tf.Tensor) -> tf.Tensor:
     shape = len(x.get_shape())
 
     # Scalars and vectors
-    if shape <= 1:  
+    if shape <= 1:
 
         axis = None
         keepdims = False
 
     # Linear layers of shape IO or multihead linear
-    elif shape in [2, 3]:  
+    elif shape in [2, 3]:
 
         axis = 0
         keepdims = True
 
     # Conv kernels of shape HWIO
-    elif shape == 4:  
+    elif shape == 4:
 
         axis = [0, 1, 2]
         keepdims = True
@@ -58,8 +54,13 @@ def unitwise_norm(x: tf.Tensor) -> tf.Tensor:
 
     return compute_norm(x, axis, keepdims)
 
-def adaptive_clip_grad(parameters: list or tf.Tensor, gradients: list or tf.Tensor, clip_factor: float = 0.01, eps: float = 1e-3) -> list or tf.Tensor:
 
+def adaptive_clip_grad(
+    parameters: list or tf.Tensor,
+    gradients: list or tf.Tensor,
+    clip_factor: float = 0.01,
+    eps: float = 1e-3,
+) -> list or tf.Tensor:
     """
     Adaptive gradient clipping.
 
@@ -74,14 +75,14 @@ def adaptive_clip_grad(parameters: list or tf.Tensor, gradients: list or tf.Tens
     """
 
     new_grads = []
-    
-    for (params, grads) in zip(parameters, gradients):
-        
+
+    for params, grads in zip(parameters, gradients):
+
         p_norm = unitwise_norm(params)
         max_norm = tf.math.maximum(p_norm, eps) * clip_factor
         grad_norm = unitwise_norm(grads)
         clipped_grad = grads * (max_norm / tf.math.maximum(grad_norm, 1e-6))
         new_grad = tf.where(grad_norm < max_norm, grads, clipped_grad)
         new_grads.append(new_grad)
-    
+
     return new_grads

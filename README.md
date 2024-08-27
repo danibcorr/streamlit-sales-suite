@@ -1,71 +1,98 @@
-Here is the adjusted README in English:
-
 # 📊 Streamline Sales Suite
 
-## **📄 Summary**
+<table align="center">
+  <tr>
+    <td><img src="images/app_image_1.png" alt="Project interface"/></td>
+    <td><img src="images/app_image_3.png" alt="Project interface"/></td>
+  </tr>
+</table>
 
-This project serves as an all-encompassing platform for data analysis and visualization, leveraging the power of Python and advanced deep learning methodologies. It incorporates a Convolutional Neural Network (CNN) model specifically designed for item classification.
+## **📄 Overview**
 
-## **🗂️ Directory Structure**
+Streamline Sales Suite is a comprehensive platform designed for data analysis and visualization, powered by Python and advanced deep learning techniques. This suite includes a Convolutional Neural Network (CNN) model tailored for item classification, enabling precise categorization and insightful data analysis.
 
-The project has a well-organized directory structure with various folders and files associated with data analysis, modeling, and web functions.
+## **🚀 Getting Started**
 
-### **data**
-- `data_analysis.py`: A script for data analysis, generating necessary plots associated with sales data.
-- `data_scraping.py`: A script for scraping images from Bing using web scraping techniques, which can be cleaned and processed later with `data_cleaning.py`.
+To set up and use this repository, follow these steps:
 
-### **models**
-- `layers/`: A folder containing functions that implement different optimizers, learning rate schedulers, and similar.
-- `architecture.py`: A script defining the base model architecture.
-- `config.py`: A script containing parameters for model training configuration and MLflow artifact creation.
-- `inference_model.py`: A script for using the trained model for inference in Streamlit.
+1. **Clone the Repository:**
+   ```bash
+   git clone <repository_url>
+   ```
 
-### **pages**
-- `2_📊_Data_Analysis.py`: A page for visualizing and interacting with data graphs.
-- `3_🔎_Item_Classifier.py`: A page for performing item classification.
+2. **Install Poetry (if not already installed):**
+   ```bash
+   pip install poetry
+   ```
 
-### **web_functions**
-- `language_State.py`: A script that keeps track of the selected language for page translation.
+3. **Install Dependencies:**
+   Set up the Python virtual environment and install all necessary dependencies:
+   ```bash
+   poetry install
+   ```
 
-## **🚀 Using This Repo**
+4. **Acquire Training Images:**
+   Obtain the images required to train the classification model:
+   ```bash
+   poetry run python ./src/data_acquisition.py
+   ```
 
-To use this repository, follow these steps:
+5. **Train the Classification Model:**
+   Train the CNN model with the acquired images:
+   ```bash
+   poetry run python ./src/training_model.py
+   ```
 
-1. **Install required libraries**: Run `pip install -r requirements.txt` to install the necessary libraries.
-2. **Scrape images**: Run `python data_scraping.py` to obtain images for training the classification model.
-3. **Clean and process data**: Use `data_cleaning.py` to clean and process the scraped images.
-4. **Create dataset structure**: Create a `datasets` folder in the project root, with subfolders named after the image labels. For example:
-    ```
-    VENTASYADIRA
-    │
-    ├── datasets
-    │   ├── books
-    │   │   ├── file_1.png
-    │   │   └──...
-    │   ├── cloth
-    │   │   ├── file_1.png
-    │   │   └──...
-    ```
-5. **Train the model**: Run `python training_model.py` to train the CNN model.
-6. **Run the Streamlit app**: Run `streamlit run 1_🏠_Home.py` to execute the Streamlit app locally and use the article classifier.
+6. **Run the Application:**
+   Launch the complete project using Streamlit:
+   ```bash
+   poetry run streamlit run ./src/1_🏠_Home.py
+   ```
 
-**Note**: The data analysis part will not be functional, as it depends on the private dataset used in this project. However, it can be adapted to other datasets.
+7. **Docker Deployment:**
+   A Dockerfile and Docker Compose are included for containerizing the application, which is particularly useful for deployment after the model is trained.
 
-## **🌟 Contributions**
+**Note:** The data analysis component relies on a private dataset and may not be functional without it. However, the project can be adapted to work with other datasets.
 
-Contributions are welcome! If you have new tools, models, or techniques you'd like to share, I'd be delighted.
+## **🔧 Technologies Used**
+
+- **Streamlit:** For building and deploying the interactive web application.
+- **Docker:** To containerize the application for easy deployment.
+- **Poetry:** For dependency management and virtual environment setup.
+- **Black:** To maintain consistent code formatting.
+- **Pandas & NumPy:** For handling data processing and ETL tasks.
+- **Loguru:** For efficient logging and monitoring of application processes.
+- **TensorFlow & Keras:** For developing and training the deep learning model.
+- **MLflow:** For tracking and managing the machine learning lifecycle.
+- **OpenCV:** For image processing tasks.
+
+## **🌟 Contributing**
+
+Contributions are highly encouraged! Whether you have new tools, models, or techniques to share, your input is welcome. Please feel free to submit a pull request or open an issue to discuss your ideas.
 
 ## **🤖 License**
 
-This project is distributed under the MIT License. Feel free to play, modify, and share the code as you wish!
+This project is licensed under the MIT License, allowing you to freely use, modify, and distribute the code.
 
 ## **🖥️ GPU Support with Nvidia Container Toolkit**
 
-To use the Nvidia GPU in Docker, we need to install the Nvidia Container Toolkit.
+To utilize Nvidia GPUs within Docker, follow these steps:
 
-1. Ensure the Nvidia drivers are installed on the host.
-2. Follow the steps described at: [Nvidia Container Toolkit Install Guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#)
-3. After installing the Nvidia Container Toolkit, restart Docker with: `sudo systemctl restart docker`
-4. Verify functionality with: `sudo docker run --rm --gpus all nvidia/cuda:11.0.3-base-ubuntu20.04 nvidia-smi`
-5. Build the Docker image: `sudo docker build -t SLS-TF-image -f tensorflow.dockerfile .`
-6. Run the Docker container: `sudo docker run --gpus all -p 8501:8501 --name SLS-TF-container SLS-TF-image`
+1. Ensure that the Nvidia drivers are installed on your host machine.
+2. Install the Nvidia Container Toolkit by following the [official guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#).
+3. Restart Docker to apply the changes:
+   ```bash
+   sudo systemctl restart docker
+   ```
+4. Verify the GPU setup with the following command:
+   ```bash
+   sudo docker run --rm --gpus all nvidia/cuda:11.0.3-base-ubuntu20.04 nvidia-smi
+   ```
+5. Build the Docker image for the project:
+   ```bash
+   sudo docker build -t SLS-TF-image -f tensorflow.dockerfile .
+   ```
+6. Run the Docker container:
+   ```bash
+   sudo docker run --gpus all -p 8501:8501 --name SLS-TF-container SLS-TF-image
+   ```

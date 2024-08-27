@@ -1,5 +1,5 @@
 # Ignore datasets files
-project/datasets/
+src/datasets/
 
 # Ignore Python-related files and directories
 *.pyc
@@ -10,11 +10,11 @@ build/
 dist/
 **/__pycache__/
 
-# Ignore prototyping directory
-project/prototyping/
 
 # Ignore trained model directory
-project/models/trained_model/
+src/models/trained_model/
+mlruns
 
 # Ignore IDE-specific files and directories
 .vscode/
+.dockerignore

@@ -1,26 +1,21 @@
-# %% Libraries
-
 import streamlit as st
 
-# %% Class definition
 
 class StateManager:
-   
-    def __init__(self):
 
+    def __init__(self):
         """
         Constructs all the necessary attributes for the StateManager object.
         If 'language' is not in st.session_state, English will be the default language.
         """
 
-        if 'language' not in st.session_state:
-            
+        if "language" not in st.session_state:
+
             # English will be the default language
-            st.session_state.language = 'English'  
+            st.session_state.language = "English"
 
     @property
     def language(self):
-
         """
         Gets the current language of the Streamlit application.
 
@@ -32,11 +27,10 @@ class StateManager:
 
     @language.setter
     def language(self, value):
-
         """
         Sets the language of the Streamlit application.
 
-        Args: 
+        Args:
             value (str): A string representing the language to be set in the Streamlit application.
         """
 

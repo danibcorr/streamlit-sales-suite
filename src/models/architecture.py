@@ -1,14 +1,13 @@
-# %% Libraries
-
 import tensorflow as tf
 from tensorflow.keras.applications import ConvNeXtSmall
 from tensorflow.keras import layers
+
 from models.layers.data_augmentation import data_augmentation_layer
 
-# %% Functions
 
-def build_model(dropout: float, fc_layers: list, num_classes: int, input_shape: tuple) -> tf.keras.Model:
-    
+def build_model(
+    dropout: float, fc_layers: list, num_classes: int, input_shape: tuple
+) -> tf.keras.Model:
     """
     Build a classification model.
 
@@ -23,7 +22,9 @@ def build_model(dropout: float, fc_layers: list, num_classes: int, input_shape: 
     """
 
     # Load the pre-trained model without the top layer
-    base_model = ConvNeXtSmall(weights = 'imagenet', include_top = False, input_shape = input_shape)
+    base_model = ConvNeXtSmall(
+        weights="imagenet", include_top=False, input_shape=input_shape
+    )
 
     # Freeze the layers of the pre-trained model due to limited memory
     for layer in base_model.layers:
@@ -31,25 +32,25 @@ def build_model(dropout: float, fc_layers: list, num_classes: int, input_shape: 
         layer.trainable = False
 
     # Create an input layer to introduce the data
-    inputs = layers.Input(shape = input_shape)
-    
+    inputs = layers.Input(shape=input_shape)
+
     # Use data augmentation
     x = data_augmentation_layer(inputs)
-    
+
     # Use the features obtained from the pre-trained model
     x = base_model(x)
-    
+
     # Reduce the dimensionality
     x = layers.GlobalAveragePooling2D()(x)
 
     # Use a few fully connected layers (MLPs)
     for fc in fc_layers:
 
-        x = layers.Dense(fc, activation = 'gelu')(x) 
+        x = layers.Dense(fc, activation="gelu")(x)
         x = layers.Dropout(dropout)(x)
 
     # Get the output of the classification
-    outputs = layers.Dense(num_classes, activation = "softmax")(x)
+    outputs = layers.Dense(num_classes, activation="softmax")(x)
 
     # Get the model
-    return tf.keras.Model(inputs = inputs, outputs = outputs, name = "ClassifierModel")
+    return tf.keras.Model(inputs=inputs, outputs=outputs, name="ClassifierModel")

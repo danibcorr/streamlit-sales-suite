@@ -1,0 +1,13 @@
+services:
+    streamline-sales-suite:
+        build:
+            context: .
+            dockerfile: tensorflow.dockerfile
+        ports:
+            - "8501:8501"
+        deploy:
+            resources:
+                reservations:
+                    devices:
+                        - capabilities: ["gpu"]
+                          driver: nvidia
