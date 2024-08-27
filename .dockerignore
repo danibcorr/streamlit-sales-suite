@@ -1,0 +1,4 @@
+# .dockerignore
+**/__pycache__/
+src/datasets/items
+src/logs

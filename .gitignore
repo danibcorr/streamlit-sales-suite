@@ -17,4 +17,3 @@ mlruns
 
 # Ignore IDE-specific files and directories
 .vscode/
-.dockerignore
