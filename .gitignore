@@ -10,6 +10,10 @@ dist/
 .venv/
 .mypy_cache
 .pytest_cache
+.env/
+jupyter/
+*.json
 
 # Ignore IDE-specific files and directories
 .vscode/
+

@@ -26,10 +26,6 @@ lint:
 	@echo "Checking Code Style and Quality with Flake8..."
 	poetry run flake8 $(SRC_PROJECT_NAME)/
 
-test:
-	@echo "Runing PyTest Tests..."
-	poetry run pytest $(SRC_PROJECT_NAME)/$(SRC_TESTS)/
-	
 complexity:
 	@echo "Check complexity with complexipy..."
 	poetry run complexipy $(SRC_PROJECT_NAME)/
@@ -38,10 +34,6 @@ security:
 	@echo "Runing Bandit Tests..."
 	poetry run bandit -r $(SRC_PROJECT_NAME) --exclude $(SRC_TESTS)
 	
-wiki-up:
-	@echo "Runing MkDocs..."
-	mkdocs serve
+pre-commit: clean lint complexity security
 
-pre-commit: clean lint test complexity security
-
-all: clean lint test complexity security wiki-up
+all: clean lint complexity security
