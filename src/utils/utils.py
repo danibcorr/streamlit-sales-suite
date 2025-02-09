@@ -1,4 +1,6 @@
 import time
+
+import pandas as pd
 import streamlit as st
 
 
@@ -46,3 +48,18 @@ def check_credentials() -> bool:
     else:
         st.warning("Credentials not available.", icon="⚠️")
         return False
+
+
+def obtain_top(df: pd.DataFrame, top: int, column: str) -> list:
+    """Obtain the top 'n' rows from a DataFrame based on a specific column.
+
+    Args:
+        df: The DataFrame containing the data.
+        top: The number of top rows to return based on the column value.
+        column: The column name to sort the data by to determine the top rows.
+
+    Returns:
+        list: A list of the top 'n' values from the specified column in the DataFrame.
+    """
+
+    return list(df[column].value_counts()[:top].index)
