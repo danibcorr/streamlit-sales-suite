@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from plotly.subplots import make_subplots
 
 from src.utils import config_streamlit_page, check_credentials, obtain_top
 
@@ -79,9 +78,7 @@ def product_month(df: pd.DataFrame, year: int) -> None:
     )
 
     # Convert month numbers to month names
-    df_filtered["Mes"] = df_filtered["Mes"].apply(
-        lambda x: months_names[x - 1]
-    )  # Map month numbers
+    df_filtered["Mes"] = df_filtered["Mes"].apply(lambda x: months_names[x - 1])
 
     # Ensure correct order with pd.Categorical
     df_filtered["Mes"] = pd.Categorical(
@@ -123,47 +120,38 @@ def gender_status(df: pd.DataFrame, year: int) -> None:
     Args:
         df: The sales data.
         year: The year to filter the data for.
-
-    Returns:
-        plotly.graph_objs.Figure: The heatmap figure.
     """
 
     st.subheader("Gender Status Heatmap")
 
-    # Filter data for the specified year
+    # Filter data by the selected year
     data_year = df[df["Fecha de venta"].dt.year == year].copy()
 
-    # Group by gender
-    df_2dhist = pd.DataFrame(
-        {
-            x_label: grp["Estado del producto"].value_counts()
-            for x_label, grp in data_year.groupby("Genero")
-        }
+    # Group by gender and product status
+    df_2dhist = data_year.pivot_table(
+        index="Estado del producto",
+        columns="Genero",
+        values="Fecha de venta",
+        aggfunc="count",
+        fill_value=0,
     )
 
-    # Create heatmap using Plotly with a recognized color scale
-    graph_gender_status = px.imshow(
-        df_2dhist, text_auto=True, color_continuous_scale="mint"
+    # Create the heatmap using Plotly
+    fig = px.imshow(
+        df_2dhist,
+        text_auto=True,
+        color_continuous_scale="mint",
+        labels={"color": "Count"},
+        aspect="auto",
     )
 
-    # Create heatmap analysis figures using subplots
-    fig_heatmaps = make_subplots(
-        rows=2,
-        cols=3,
-        specs=[[{"rowspan": 2}, {}, None], [{}, None, None]],
-        horizontal_spacing=0.15,
+    # Adjust the layout to remove the grid, axes background transparency, and colorbar
+    fig.update_layout(
+        xaxis_title="Gender", yaxis_title="Product Status", coloraxis_showscale=False
     )
 
-    fig_heatmaps.add_trace(graph_gender_status["data"][0], row=1, col=2)
-
-    # Adjust layout settings for better visualization
-    fig_heatmaps.update_layout(
-        height=800,
-    )
-    fig_heatmaps.update_coloraxes(showscale=False)
-
-    # Display the figure in Streamlit
-    st.plotly_chart(fig_heatmaps, use_container_width=True, theme=None)
+    # Display the plot in Streamlit
+    st.plotly_chart(fig, use_container_width=True)
 
 
 def status_country(df: pd.DataFrame, year: int) -> None:
@@ -184,35 +172,32 @@ def status_country(df: pd.DataFrame, year: int) -> None:
     data_year = df[df["Fecha de venta"].dt.year == year].copy()
 
     # Group by product status and count the occurrences by country
-    df_2dhist = pd.DataFrame(
-        {
-            x_label: grp["Pais"].value_counts()
-            for x_label, grp in data_year.groupby("Estado del producto")
-        }
+    df_2dhist = data_year.pivot_table(
+        index="Pais",
+        columns="Estado del producto",
+        values="Fecha de venta",
+        aggfunc="count",
+        fill_value=0,
     )
 
     # Create the heatmap using Plotly
-    graph_status_country = px.imshow(
-        df_2dhist, text_auto=True, color_continuous_scale="mint"
+    fig = px.imshow(
+        df_2dhist,
+        text_auto=True,
+        color_continuous_scale="mint",
+        labels={"color": "Count"},
+        aspect="auto",
     )
 
-    # Create a subplot for the heatmap
-    fig_heatmaps = make_subplots(
-        rows=2,
-        cols=3,
-        specs=[[{"rowspan": 2}, {}, None], [{}, None, None]],
-        horizontal_spacing=0.15,
+    # Adjust the layout to remove the grid, axes background transparency, and colorbar
+    fig.update_layout(
+        xaxis_title="Product Status",
+        yaxis_title="Country",
+        coloraxis_showscale=False,  # Hide the colorbar
     )
 
-    # Add the heatmap to the subplot
-    fig_heatmaps.add_trace(graph_status_country["data"][0], row=1, col=1)
-
-    # Adjust layout settings for better visualization
-    fig_heatmaps.update_layout(height=800)
-    fig_heatmaps.update_coloraxes(showscale=False)
-
-    # Display the figure in Streamlit
-    st.plotly_chart(fig_heatmaps, use_container_width=True, theme=None)
+    # Display the plot in Streamlit
+    st.plotly_chart(fig, use_container_width=True)
 
 
 def display_all_graphs(credentials_status: bool) -> None:
@@ -246,7 +231,7 @@ def display_all_graphs(credentials_status: bool) -> None:
 
 
 # First call to the config page function
-config_streamlit_page(page_name="🏠 Graphs")
+config_streamlit_page(page_name="Graphs")
 
 # Check if the credentials are available and display all the graphs
 display_all_graphs(credentials_status=check_credentials())
