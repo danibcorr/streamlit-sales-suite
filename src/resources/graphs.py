@@ -113,6 +113,36 @@ def product_month(df: pd.DataFrame, year: int) -> None:
         )
 
 
+def interest_category(df: pd.DataFrame, year: int) -> None:
+    """
+    Analyzes and visualizes the number of likes per product category for a given year.
+
+    Args:
+        df: The DataFrame containing sales data.
+        year: The year for which to filter and analyze the data.
+
+    Displays:
+        A bar chart in Streamlit showing the number of likes per product category.
+    """
+
+    # Filter data for the selected year
+    df_filtered = df[df["Fecha de venta"].dt.year == year].copy()
+
+    # Group by 'Tipo producto' and count 'Numero de mg'
+    df_filtered = df_filtered.groupby("Tipo producto")["Numero de mg"].count()
+
+    # Convert the result to a DataFrame
+    df_filtered = pd.DataFrame(
+        {"Tipo producto": df_filtered.index, "Numero de mg": df_filtered.values}
+    )
+
+    # Show graph in Streamlit
+    st.subheader(f"Likes by Category in {year}")
+    st.bar_chart(
+        df_filtered.set_index("Tipo producto"), x_label="Product Type", y_label="Likes"
+    )
+
+
 def gender_status(df: pd.DataFrame, year: int) -> None:
     """
     Calculate and visualize the gender distribution by product status for a given year.
@@ -219,6 +249,9 @@ def display_all_graphs(credentials_status: bool) -> None:
         # Money earned per month/year
         money_month(df=st.session_state.dataframe, year=int(selected_year))
 
+        # Number of people interested by category in a year
+        interest_category(df=st.session_state.dataframe, year=int(selected_year))
+
         col1, col2 = st.columns(2)
         with col1:
             # Matrix confusion relation between product status and gender
@@ -226,8 +259,6 @@ def display_all_graphs(credentials_status: bool) -> None:
         with col2:
             # Matrix confusion relation between product state and country
             status_country(df=st.session_state.dataframe, year=int(selected_year))
-
-        # TODO: Number of people interested by category in a year
 
 
 # First call to the config page function

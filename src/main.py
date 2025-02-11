@@ -97,6 +97,11 @@ def streamlit_configuration() -> None:
                 icon=":material/monitoring:",
             ),
             st.Page(
+                "./resources/discount_calculator.py",
+                title="Discount Calculator",
+                icon=":material/calculate:",
+            ),
+            st.Page(
                 "./resources/interact.py",
                 title="Interact",
                 icon=":material/interactive_space:",
