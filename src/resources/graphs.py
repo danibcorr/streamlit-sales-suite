@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.express as px
 
 # Own modules
-from src.utils import config_streamlit_page, check_credentials, obtain_top
+from utils import config_streamlit_page, check_credentials, obtain_top
 
 # List of month names
 months_names = [

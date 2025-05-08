@@ -1,2 +1,2 @@
 # Own modules
-from src.utils.utils import *  # noqa
+from utils.utils import *  # noqa

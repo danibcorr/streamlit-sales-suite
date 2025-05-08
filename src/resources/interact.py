@@ -2,7 +2,7 @@
 import streamlit as st
 
 # Own modules
-from src.utils import config_streamlit_page
+from utils import config_streamlit_page
 
 # First call to the config page function
 config_streamlit_page(page_name="Interact")
