@@ -3,7 +3,7 @@ name = "streamlit-sales-suite"
 version = "0.1.0"
 description = "Streamlit Sales Suite"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = [
     "matplotlib>=3.10.1",
     "numpy>=2.2.5",
