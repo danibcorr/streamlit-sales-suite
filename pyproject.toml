@@ -13,22 +13,11 @@ dependencies = [
     "streamlit>=1.45.0",
 ]
 
-[tool.uv]
-default-groups = "all"
-
 [dependency-groups]
-documentation = [
-    "mkdocs>=1.6.1",
-    "mkdocs-enumerate-headings-plugin>=0.6.2",
-    "mkdocs-git-authors-plugin>=0.9.5",
-    "mkdocs-git-revision-date-localized-plugin>=1.4.5",
-    "mkdocs-jupyter>=0.25.1",
-    "mkdocs-material>=9.6.12",
-    "mkdocstrings[python]>=0.29.1",
-]
 pipeline = [
     "bandit>=1.8.3",
-    "black[jupyter]>=25.1.0",
+    "black>=25.1.0",
+    "black[jupyter]",
     "complexipy>=2.1.1",
     "flake8>=7.2.0",
     "flake8-pyproject>=1.2.3",
