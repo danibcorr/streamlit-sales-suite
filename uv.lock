@@ -1332,7 +1332,8 @@ requires-dist = [
 [package.metadata.requires-dev]
 pipeline = [
     { name = "bandit", specifier = ">=1.8.3" },
-    { name = "black", extras = ["jupyter"], specifier = ">=25.1.0" },
+    { name = "black", specifier = ">=25.1.0" },
+    { name = "black", extras = ["jupyter"] },
     { name = "complexipy", specifier = ">=2.1.1" },
     { name = "flake8", specifier = ">=7.2.0" },
     { name = "flake8-pyproject", specifier = ">=1.2.3" },

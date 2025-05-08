@@ -13,7 +13,7 @@ install:
 	@echo "Installing dependencies..."
 	@pip install --upgrade pip
 	@pip install uv
-	@uv pip install -r pyproject.toml
+	@uv pip install -r pyproject.toml --group pipeline
 	@echo "✅ Dependencies installed."
 
 # Clean cache and temporary files
