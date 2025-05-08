@@ -47,9 +47,9 @@ def check_credentials() -> bool:
     if "credentials" in st.session_state and st.session_state.credentials:
         credentials_available()
         return True
-    else:
-        st.warning("Credentials not available.", icon="⚠️")
-        return False
+
+    st.warning("Credentials not available.", icon="⚠️")
+    return False
 
 
 def obtain_top(df: pd.DataFrame, top: int, column: str) -> list:

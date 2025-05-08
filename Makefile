@@ -1,5 +1,5 @@
 # Declare all phony targets
-.PHONY: install clean lint code_check tests doc pipeline all
+.PHONY: install clean lint code_check tests pipeline all
 
 # Default target
 .DEFAULT_GOAL := all
@@ -53,15 +53,10 @@ tests:
 		echo "No tests directory found. Skipping tests."; \
 	fi
 
-# Serve documentation locally
-doc:
-	@echo "Serving documentation..."
-	@uv run mkdocs serve
-
 # Run code checks and tests
 pipeline: clean lint code_check tests
 	@echo "✅ Pipeline complete."
 
-# Run full workflow including install and docs
-all: install pipeline doc
+# Run full workflow including
+all: install pipeline
 	@echo "✅ All tasks complete."

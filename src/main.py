@@ -48,7 +48,7 @@ def upload_credentials() -> None:
             else:
                 st.sidebar.error("Invalid credentials: Missing path key.", icon="⚠️")
 
-        except Exception as e:
+        except ValueError as e:
             st.sidebar.error(f"Error reading the JSON file: {e}", icon="⚠️")
     else:
         # Provide feedback if the user has already uploaded the credentials
