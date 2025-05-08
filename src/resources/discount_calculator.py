@@ -15,7 +15,9 @@ def discount_calculator():
         original_price = st.number_input(
             "Price before discount (€)", min_value=0.0, value=0.0, format="%.2f"
         )
-        discount = st.slider("Discount (%)", min_value=0, max_value=100, value=0, step=1)
+        discount = st.slider(
+            "Discount (%)", min_value=0, max_value=100, value=0, step=1
+        )
 
         saving = original_price * (discount / 100)
         price_after_discount = original_price - saving

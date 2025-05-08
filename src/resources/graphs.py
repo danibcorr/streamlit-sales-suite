@@ -46,7 +46,9 @@ def money_month(df: pd.DataFrame, year: int) -> None:
     df_money_month = df_money_month.reindex(all_months, fill_value=0)
 
     # Convert to DataFrame and include month names
-    df_money_month = pd.DataFrame({"Mes": months_names, "Dinero": df_money_month.values})
+    df_money_month = pd.DataFrame(
+        {"Mes": months_names, "Dinero": df_money_month.values}
+    )
 
     # Ensure correct order with pd.Categorical
     df_money_month["Mes"] = pd.Categorical(
@@ -237,7 +239,7 @@ def display_all_graphs(credentials_status: bool) -> None:
     Displays various graphs based on the availability of credentials.
 
     Args:
-        credentials_status: The status indicating whether the user has valid credentials.
+        credentials_status: The status indicating if credentials are valid.
     """
 
     if credentials_status:
