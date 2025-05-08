@@ -13,6 +13,9 @@ dependencies = [
     "streamlit>=1.45.0",
 ]
 
+[tool.uv]
+default-groups = "all"
+
 [dependency-groups]
 documentation = [
     "mkdocs>=1.6.1",
