@@ -1,44 +1,78 @@
 [project]
-name = "src"
+name = "streamlit-sales-suite"
 version = "0.1.0"
 description = "Streamlit Sales Suite"
-authors = [
-    {name = "Daniel Bazo",email = "nothing@nothing.com"}
-]
-license = "LICENSE"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
-    "complexipy (>=1.2.0,<2.0.0)",
-    "bandit[toml] (>=1.8.2,<2.0.0)",
-    "pandas (>=2.2.3,<3.0.0)",
-    "numpy (>=2.2.2,<3.0.0)",
-    "openpyxl (>=3.1.5,<4.0.0)",
-    "streamlit (>=1.42.0,<2.0.0)",
-    "matplotlib (>=3.10.0,<4.0.0)",
-    "plotly (>=6.0.0,<7.0.0)",
+    "matplotlib>=3.10.1",
+    "numpy>=2.2.5",
+    "openpyxl>=3.1.5",
+    "pandas>=2.2.3",
+    "plotly>=6.0.1",
+    "streamlit>=1.45.0",
 ]
-package-mode = false
 
-[tool.poetry.group.test.dependencies]
-pytest = "^8.3.4"
-pytest-timeout = "^2.3.1"
+[tool.uv]
+default-groups = "all"
 
-[tool.poetry.group.lint.dependencies]
-black = "^24.10.0"
-flake8 = "^7.1.1"
-mypy = "^1.14.1"
-typing-extensions = "^4.12.2"
-types-requests = "^2.32.0.20241016"
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+documentation = [
+    "mkdocs>=1.6.1",
+    "mkdocs-enumerate-headings-plugin>=0.6.2",
+    "mkdocs-git-authors-plugin>=0.9.5",
+    "mkdocs-git-revision-date-localized-plugin>=1.4.5",
+    "mkdocs-jupyter>=0.25.1",
+    "mkdocs-material>=9.6.12",
+    "mkdocstrings[python]>=0.29.1",
+]
+pipeline = [
+    "bandit>=1.8.3",
+    "black[jupyter]>=25.1.0",
+    "complexipy>=2.1.1",
+    "flake8>=7.2.0",
+    "flake8-pyproject>=1.2.3",
+    "mypy>=1.15.0",
+    "pylint>=3.3.7",
+    "pytest>=8.3.5",
+    "pytest-order>=1.3.0",
+]
 
 [tool.black]
-line-length = 89
-skip-string-normalization = false
+line-length = 88
+exclude = '''
+/(
+  .venv
+)/
+'''
 
-[tool.bandit]
-exclude = ["src/tests/"]
-skips = ["B101"]
+[tool.flake8]
+max-line-length = 88
+extend-ignore = "E203, W503, N812"
+exclude = [
+    ".venv/"
+]
+
+[tool.mypy]
+check_untyped_defs = true
+ignore_missing_imports = true
+exclude = [
+    "^(build|dist|venv)",
+    ".venv/"
+]
+cache_dir = "/dev/null"
+
+[tool.pylint]
+max-line-length = 88
+disable = [
+    "W0201,E1102,W0221,R0901,W0223,R0801,R0912,R0913,R0914,R0915,R0917",
+    "R1711,R1732,W1203,R0902,W0707,C0114"
+]
+
+[tool.pylint.MASTER]
+ignore-paths = [
+    ".venv/"
+]
+
+[tool.pylint.typecheck]
+generated-members=["numpy.*", "torch.*"]
