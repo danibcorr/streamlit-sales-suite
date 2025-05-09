@@ -77,7 +77,8 @@ def streamlit_configuration() -> None:
 	# Add information related to the project
 	st.sidebar.subheader("About")
 	st.sidebar.image(
-		image="./docs/imgs/nikola-duza-fi6kmznklGQ-unsplash.jpg", use_container_width=True
+		image="./docs/imgs/nikola-duza-fi6kmznklGQ-unsplash.jpg",
+		use_container_width=True,
 	)
 	st.sidebar.markdown(
 		"""

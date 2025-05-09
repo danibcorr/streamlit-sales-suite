@@ -28,6 +28,7 @@ clean:
 # Check code formatting and linting
 lint:
 	@echo "Running lint checks..."
+	@uv run ruff format $(SRC_PROJECT_NAME)/ $(SRC_TESTS)/
 	@uv run ruff check $(SRC_PROJECT_NAME)/ $(SRC_TESTS)/
 	@echo "✅ Linting complete."
 
