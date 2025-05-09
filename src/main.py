@@ -69,7 +69,7 @@ def streamlit_configuration() -> None:
 
 	# Logo for the project
 	st.logo(
-		image="./imgs/logo.png",
+		image="./docs/imgs/logo.png",
 		link="https://github.com/danibcorr/streamlit-sales-suite",
 		size="large",
 	)
@@ -77,7 +77,7 @@ def streamlit_configuration() -> None:
 	# Add information related to the project
 	st.sidebar.subheader("About")
 	st.sidebar.image(
-		image="./imgs/nikola-duza-fi6kmznklGQ-unsplash.jpg", use_container_width=True
+		image="./docs/imgs/nikola-duza-fi6kmznklGQ-unsplash.jpg", use_container_width=True
 	)
 	st.sidebar.markdown(
 		"""

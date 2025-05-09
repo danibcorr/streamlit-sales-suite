@@ -1,5 +1,5 @@
 # Declare all phony targets
-.PHONY: install clean lint code_check tests pipeline all
+.PHONY: install clean lint code_check tests doc pipeline all
 
 # Default target
 .DEFAULT_GOAL := all
@@ -13,7 +13,7 @@ install:
 	@echo "Installing dependencies..."
 	@pip install --upgrade pip
 	@pip install uv
-	@uv pip install -r pyproject.toml --group pipeline
+	@uv pip install -r pyproject.toml --group pipeline --group documentation
 	@echo "✅ Dependencies installed."
 
 # Clean cache and temporary files
@@ -34,6 +34,7 @@ lint:
 # Static analysis and security checks
 code_check:
 	@echo "Running static code checks..."
+	@uv run mypy $(SRC_PROJECT_NAME)/ $(SRC_TESTS)/
 	@uv run complexipy -d low $(SRC_PROJECT_NAME)/
 	@echo "Running security scan with Bandit..."
 	@uv run bandit -r $(SRC_PROJECT_NAME)/ --exclude $(SRC_TESTS)
@@ -50,10 +51,15 @@ tests:
 		echo "No tests directory found. Skipping tests."; \
 	fi
 
+# Serve documentation locally
+doc:
+	@echo "Serving documentation..."
+	@uv run mkdocs serve
+
 # Run code checks and tests
 pipeline: clean lint code_check tests
 	@echo "✅ Pipeline complete."
 
-# Run full workflow including
-all: install pipeline
+# Run full workflow including install and docs
+all: install pipeline doc
 	@echo "✅ All tasks complete."
