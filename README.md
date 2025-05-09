@@ -1,66 +1,65 @@
 # 📊 Streamline Sales Suite
 
-## **📄 Overview**
+A powerful, all-in-one platform for data-driven sales analysis and visualization, built
+with efficiency and automation in mind.
 
-Streamline Sales Suite is a comprehensive platform designed for data analysis and
-visualization.
+## 📄 Overview
 
-## **🚀 Getting Started**
+**Streamline Sales Suite** is a comprehensive application designed to simplify the
+exploration and interpretation of sales data. Whether you're tracking KPIs, identifying
+trends, or preparing reports, this tool offers a robust and interactive environment for
+data analysis using [Streamlit](https://streamlit.io).
 
-To set up and use this repository, follow these steps:
+## 🏗️ Installation & Setup
 
-1. **Clone the Repository:**
+Follow these steps to get up and running quickly:
 
-   ```bash
-   git clone <repository_url>
-   ```
+### 1. Clone the Repository
 
-2. **Install Poetry (if not already installed):**
+```bash
+git clone https://github.com/danibcorr/streamlit-sales-suite
+cd streamlit-sales-suite
+```
 
-   ```bash
-   pip install poetry
-   ```
+### 2. Set Up Your Python Environment
 
-3. **Install Dependencies:** Set up the Python virtual environment and install all
-   necessary dependencies:
+Create and activate a virtual environment (e.g., with `venv` or `conda`):
 
-   ```bash
-   poetry install
-   ```
+```bash
+python -m venv .venv
+source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
+```
 
-4. **Acquire Training Images:** Obtain the images required to train the classification
-   model:
+### 3. Install Dependencies
 
-   ```bash
-   poetry run python ./src/data_acquisition.py
-   ```
+Use the `Makefile` for automated setup:
 
-5. **Train the Classification Model:** Train the CNN model with the acquired images:
+```bash
+make
+```
 
-   ```bash
-   poetry run python ./src/training_model.py
-   ```
+Or install dependencies manually:
 
-6. **Run the Application:** Launch the complete project using Streamlit:
+```bash
+pip install -r pyproject.toml
+```
 
-   ```bash
-   poetry run streamlit run ./src/1_🏠_Home.py
-   ```
+## 🔧 Development & CI Pipeline
 
-7. **Docker Deployment:** A Dockerfile and Docker Compose are included for containerizing
-   the application, which is particularly useful for deployment after the model is
-   trained.
+Run the full suite of quality checks:
 
-**Note:** The data analysis component relies on a private dataset and may not be
-functional without it. However, the project can be adapted to work with other datasets.
+```bash
+make pipeline
+```
 
-## **🌟 Contributing**
+Trigger a complete workflow, including setup, cleanup, and tests:
 
-Contributions are highly encouraged! Whether you have new tools, models, or techniques to
-share, your input is welcome. Please feel free to submit a pull request or open an issue
-to discuss your ideas.
+```bash
+make all
+```
 
-## **🤖 License**
+## 📬 Feedback & Contributions
 
-This project is licensed under the MIT License, allowing you to freely use, modify, and
-distribute the code.
+We welcome issues, suggestions, and pull requests! Please open an
+[issue](https://github.com/danibcorr/streamlit-sales-suite/issues) if you encounter any
+bugs or have improvement ideas.
