@@ -1,5 +1,7 @@
+# Standard libraries
 import json
 
+# 3pps
 import pandas as pd
 import streamlit as st
 
@@ -69,7 +71,7 @@ def streamlit_configuration() -> None:
 
 	# Logo for the project
 	st.logo(
-		image="./docs/imgs/logo.png",
+		image="src/images/logo.png",
 		link="https://github.com/danibcorr/streamlit-sales-suite",
 		size="large",
 	)
@@ -77,7 +79,7 @@ def streamlit_configuration() -> None:
 	# Add information related to the project
 	st.sidebar.subheader("About")
 	st.sidebar.image(
-		image="./docs/imgs/nikola-duza-fi6kmznklGQ-unsplash.jpg",
+		image="src/images/nikola-duza-fi6kmznklGQ-unsplash.jpg",
 		use_container_width=True,
 	)
 	st.sidebar.markdown(
@@ -101,11 +103,6 @@ def streamlit_configuration() -> None:
 				"./resources/discount_calculator.py",
 				title="Discount Calculator",
 				icon=":material/calculate:",
-			),
-			st.Page(
-				"./resources/interact.py",
-				title="Interact",
-				icon=":material/interactive_space:",
 			),
 		]
 	}
