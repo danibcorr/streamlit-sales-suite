@@ -247,7 +247,7 @@ def gender_country(df: pd.DataFrame, year: int) -> None:
 	st.subheader("Gender Distribution by Country")
 
 	# Filter data for the specified year
-	data_year = df[df["Fecha de venta"].dt.year == 2023]
+	data_year = df[df["Fecha de venta"].dt.year == year].copy()
 
 	# Group by product status and count the occurrences by country
 	df_2dhist = data_year.pivot_table(
