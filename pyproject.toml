@@ -2,34 +2,41 @@
 name = "streamlit-sales-suite"
 version = "0.1.0"
 description = "Streamlit Sales Suite"
+authors = [
+    {name = "Daniel Bazo Correa", email = "none@none.com"},
+]
+license = {file = "LICENSE"}
 readme = "README.md"
 requires-python = ">=3.11"
+classifiers = [
+    "Topic :: Software Development",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+]
 dependencies = [
-    "matplotlib>=3.10.1",
-    "numpy>=2.2.5",
-    "openpyxl>=3.1.5",
-    "pandas>=2.2.3",
-    "plotly>=6.0.1",
-    "streamlit>=1.45.0",
+    "matplotlib==3.10.1",
+    "numpy==2.2.5",
+    "openpyxl==3.1.5",
+    "pandas==2.2.3",
+    "plotly==6.0.1",
+    "streamlit==1.45.0",
 ]
 
+[tool.uv]
+default-groups = "all"
+cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true } }]
+
 [dependency-groups]
-documentation = [
-    "mkdocs>=1.6.1",
-    "mkdocs-enumerate-headings-plugin>=0.6.2",
-    "mkdocs-git-authors-plugin>=0.9.5",
-    "mkdocs-git-revision-date-localized-plugin>=1.4.5",
-    "mkdocs-jupyter>=0.25.1",
-    "mkdocs-material>=9.6.12",
-    "mkdocstrings[python]>=0.29.1",
-]
 pipeline = [
-    "bandit>=1.8.3",
-    "complexipy>=2.1.1",
-    "mypy>=1.15.0",
-    "pytest>=8.3.5",
-    "pytest-order>=1.3.0",
-    "ruff>=0.11.8",
+    "bandit==1.8.6",
+    "complexipy==3.3.0",
+    "mypy==1.17.1",
+    "pytest==8.4.1",
+    "pytest-order==1.3.0",
+    "ruff==0.12.7",
+    "isort==6.0.1",
+    "nbqa==1.9.1"
 ]
 
 [tool.ruff]
@@ -92,3 +99,11 @@ exclude = [
     ".venv/"
 ]
 cache_dir = "/dev/null"
+
+[tool.isort]
+known_first_party = ["src"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+import_heading_stdlib = "Standard libraries"
+import_heading_thirdparty = "3pps"
+import_heading_firstparty = "Own modules"
+line_length = 88

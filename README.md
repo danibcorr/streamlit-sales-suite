@@ -1,16 +1,16 @@
-# 📊 Streamline Sales Suite
+# Streamline Sales Suite
 
 A powerful, all-in-one platform for data-driven sales analysis and visualization, built
 with efficiency and automation in mind.
 
-## 📄 Overview
+## Overview
 
 **Streamline Sales Suite** is a comprehensive application designed to simplify the
 exploration and interpretation of sales data. Whether you're tracking KPIs, identifying
 trends, or preparing reports, this tool offers a robust and interactive environment for
 data analysis using [Streamlit](https://streamlit.io).
 
-## 🏗️ Installation & Setup
+## Installation & Setup
 
 Follow these steps to get up and running quickly:
 
@@ -44,7 +44,7 @@ Or install dependencies manually:
 pip install -r pyproject.toml
 ```
 
-## 🔧 Development & CI Pipeline
+## Development & CI Pipeline
 
 Run the full suite of quality checks:
 
@@ -58,7 +58,7 @@ Trigger a complete workflow, including setup, cleanup, and tests:
 make all
 ```
 
-## 📬 Feedback & Contributions
+## Feedback & Contributions
 
 We welcome issues, suggestions, and pull requests! Please open an
 [issue](https://github.com/danibcorr/streamlit-sales-suite/issues) if you encounter any

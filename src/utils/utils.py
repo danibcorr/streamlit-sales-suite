@@ -1,5 +1,7 @@
+# Standard libraries
 import time
 
+# 3pps
 import pandas as pd
 import streamlit as st
 
