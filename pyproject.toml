@@ -23,10 +23,6 @@ dependencies = [
     "streamlit==1.45.0",
 ]
 
-[tool.uv]
-default-groups = "all"
-cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true } }]
-
 [dependency-groups]
 pipeline = [
     "bandit==1.8.6",
