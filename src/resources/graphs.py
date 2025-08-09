@@ -234,6 +234,73 @@ def status_country(df: pd.DataFrame, year: int) -> None:
 	st.plotly_chart(fig, use_container_width=True)
 
 
+def gender_country(df: pd.DataFrame, year: int) -> None:
+	"""
+	Calculate and visualize the gender distribution by country for a given year.
+	Args:
+		df: The sales data.
+		year: The year to filter the data for.
+	Returns:
+		None: Displays the combined visualization in Streamlit
+	"""
+
+	st.subheader("Gender Distribution by Country")
+
+	# Filter data for the specified year
+	data_year = df[df["Fecha de venta"].dt.year == 2023]
+
+	# Group by product status and count the occurrences by country
+	df_2dhist = data_year.pivot_table(
+		index="Pais",
+		columns="Genero",
+		values="Fecha de venta",
+		aggfunc="count",
+		fill_value=0,
+	)
+
+	# Split in genres
+	df_f = df_2dhist["F"].sort_values(ascending=False).to_frame()
+	df_m = df_2dhist["M"].sort_values(ascending=False).to_frame()
+
+	col1, col2 = st.columns(2)
+	with col1:
+		# Create the heatmap using Plotly
+		fig = px.imshow(
+			df_f,
+			text_auto=True,
+			color_continuous_scale="mint",
+			labels={"color": "Count"},
+			aspect="auto",
+		)
+
+		# Adjust the layout to remove the grid, axes background transparency
+		# and colorbar
+		fig.update_layout(
+			xaxis_title="Gender",
+			yaxis_title="Country",
+			coloraxis_showscale=False,  # Hide the colorbar
+		)
+		st.plotly_chart(fig, use_container_width=True)
+	with col2:
+		# Create the heatmap using Plotly
+		fig = px.imshow(
+			df_m,
+			text_auto=True,
+			color_continuous_scale="mint",
+			labels={"color": "Count"},
+			aspect="auto",
+		)
+
+		# Adjust the layout to remove the grid, axes background transparency,
+		# and colorbar
+		fig.update_layout(
+			xaxis_title="Gender",
+			yaxis_title="Country",
+			coloraxis_showscale=False,  # Hide the colorbar
+		)
+		st.plotly_chart(fig, use_container_width=True)
+
+
 def display_all_graphs(credentials_status: bool) -> None:
 	"""
 	Displays various graphs based on the availability of credentials.
@@ -263,6 +330,9 @@ def display_all_graphs(credentials_status: bool) -> None:
 		with col2:
 			# Matrix confusion relation between product state and country
 			status_country(df=st.session_state.dataframe, year=int(selected_year))
+
+		# Matrix confusion relation between genre and country
+		gender_country(df=st.session_state.dataframe, year=int(selected_year))
 
 
 # First call to the config page function
