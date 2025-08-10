@@ -12,7 +12,7 @@ SRC_ALL ?= .
 # Install project dependencies
 install:
 	@echo "Installing dependencies..."
-	@uv sync --all-extras
+	@uv sync --all-groups --all-extras
 	@echo "✅ Dependencies installed."
 
 # Clean cache and temporary files

@@ -14,12 +14,14 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 *.ruff_cache/
+*notebooks/
 
 # Files
 *.pyc
 *.pyo
 *.pyd
 *.egg-info
+*.json
 
 # Exceptions
 !/.devcontainer/*

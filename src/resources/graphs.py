@@ -156,7 +156,7 @@ def gender_status(df: pd.DataFrame, year: int) -> None:
 		year: The year to filter the data for.
 	"""
 
-	st.subheader("Gender Status Heatmap")
+	st.subheader(f"Gender Status Heatmap in {year}")
 
 	# Filter data by the selected year
 	data_year = df[df["Fecha de venta"].dt.year == year].copy()
@@ -200,7 +200,7 @@ def status_country(df: pd.DataFrame, year: int) -> None:
 		plotly.graph_objs.Figure: The heatmap figure.
 	"""
 
-	st.subheader("Product Status by Country Heatmap")
+	st.subheader(f"Product Status by Country Heatmap in {year}")
 
 	# Filter data for the specified year
 	data_year = df[df["Fecha de venta"].dt.year == year].copy()
@@ -237,6 +237,7 @@ def status_country(df: pd.DataFrame, year: int) -> None:
 def gender_country(df: pd.DataFrame, year: int) -> None:
 	"""
 	Calculate and visualize the gender distribution by country for a given year.
+
 	Args:
 		df: The sales data.
 		year: The year to filter the data for.
@@ -244,7 +245,7 @@ def gender_country(df: pd.DataFrame, year: int) -> None:
 		None: Displays the combined visualization in Streamlit
 	"""
 
-	st.subheader("Gender Distribution by Country")
+	st.subheader(f"Gender Distribution by Country in {year}")
 
 	# Filter data for the specified year
 	data_year = df[df["Fecha de venta"].dt.year == year].copy()
@@ -301,6 +302,114 @@ def gender_country(df: pd.DataFrame, year: int) -> None:
 		st.plotly_chart(fig, use_container_width=True)
 
 
+def compare_products_years(df: pd.DataFrame, years: list[int]) -> None:
+	st.subheader(
+		"Comparison of Products Sold by Type and Year in "
+		f"{str(', '.join([str(year) for year in years]))}"
+	)
+
+	# First we filter the data for the years selected
+	data_filtered = df[df["Fecha de venta"].dt.year.isin(years)]
+
+	df_pivot = (
+		data_filtered.groupby(
+			["Tipo producto", data_filtered["Fecha de venta"].dt.year]
+		)
+		.size()
+		.reset_index(name="Cantidad")
+	)
+	df_pivot.columns = ["Tipo producto", "Año", "Cantidad"]
+	df_pivot["Año"] = df_pivot["Año"].astype(str)
+	fig = px.bar(
+		df_pivot,
+		x="Tipo producto",
+		y="Cantidad",
+		color="Año",
+		title="",
+		barmode="group",
+		text_auto=True,
+		color_discrete_sequence=px.colors.qualitative.Pastel,
+	)
+	fig.update_layout(
+		xaxis_title="Product Type",
+		yaxis_title="Quantity",
+		legend_title="Year",
+		barmode="group",
+		xaxis_tickangle=-45,
+	)
+	fig.update_traces(
+		textfont_size=12, textangle=0, textposition="outside", cliponaxis=False
+	)
+	st.plotly_chart(fig, use_container_width=True)
+
+
+def compare_income_month_years(df: pd.DataFrame, years: list[int]) -> None:
+	st.subheader(
+		"Comparison of Income by Month and Year in "
+		f"{str(', '.join([str(year) for year in years]))}"
+	)
+
+	# First we filter the data for the years selected
+	data_filtered = df[df["Fecha de venta"].dt.year.isin(years)]
+
+	data_filtered["Fecha de venta"] = pd.to_datetime(data_filtered["Fecha de venta"])
+
+	data_filtered["Año"] = data_filtered["Fecha de venta"].dt.year.astype(str)
+	data_filtered["Mes"] = data_filtered["Fecha de venta"].dt.month
+	data_filtered["Mes_nombre"] = data_filtered["Fecha de venta"].dt.strftime("%B")
+	data_filtered["Año_Mes"] = data_filtered["Fecha de venta"].dt.strftime("%Y-%m")
+
+	df_ganancias = (
+		data_filtered.groupby(["Año", "Mes", "Mes_nombre", "Año_Mes"])[
+			"Precio producto"
+		]
+		.sum()
+		.reset_index()
+	)
+
+	fig = px.bar(
+		df_ganancias,
+		x="Mes_nombre",
+		y="Precio producto",
+		color="Año",
+		barmode="group",
+		text="Precio producto",
+		color_discrete_sequence=px.colors.qualitative.Pastel,
+		category_orders={
+			"Mes_nombre": [
+				"January",
+				"February",
+				"March",
+				"April",
+				"May",
+				"June",
+				"July",
+				"August",
+				"September",
+				"October",
+				"November",
+				"December",
+			]
+		},
+	)
+
+	fig.update_layout(
+		xaxis_title="Month",
+		yaxis_title="Income (€)",
+		legend_title="Year",
+		xaxis_tickangle=-45,
+	)
+
+	fig.update_traces(
+		texttemplate="%{text:.0f}€",
+		textposition="outside",
+		textfont_size=10,
+		cliponaxis=False,
+	)
+
+	st.plotly_chart(fig, use_container_width=True)
+
+
 def display_all_graphs(credentials_status: bool) -> None:
 	"""
 	Displays various graphs based on the availability of credentials.
@@ -312,27 +421,42 @@ def display_all_graphs(credentials_status: bool) -> None:
 	if credentials_status:
 		# Show a select box with the years available in the dataset
 		available_years = st.session_state.dataframe["Fecha de venta"].dt.year.unique()
-		selected_year: str = st.selectbox("Select a year", available_years)
+		compare_multiple_years: bool = st.checkbox("Compare multiple years.")
 
-		# Number of products sold month/year
-		product_month(df=st.session_state.dataframe, year=int(selected_year))
+		if compare_multiple_years:
+			# Select all the years availables
+			selected_years = st.multiselect(
+				"Select all the years you want to compare",
+				available_years,
+				default=2023,
+			)
 
-		# Money earned per month/year
-		money_month(df=st.session_state.dataframe, year=int(selected_year))
+			compare_products_years(df=st.session_state.dataframe, years=selected_years)
+			compare_income_month_years(
+				df=st.session_state.dataframe, years=selected_years
+			)
+		else:
+			selected_year: str = st.selectbox("Select a year", available_years)
 
-		# Number of people interested by category in a year
-		interest_category(df=st.session_state.dataframe, year=int(selected_year))
+			# Number of products sold month/year
+			product_month(df=st.session_state.dataframe, year=int(selected_year))
 
-		col1, col2 = st.columns(2)
-		with col1:
-			# Matrix confusion relation between product status and gender
-			gender_status(df=st.session_state.dataframe, year=int(selected_year))
-		with col2:
-			# Matrix confusion relation between product state and country
-			status_country(df=st.session_state.dataframe, year=int(selected_year))
+			# Money earned per month/year
+			money_month(df=st.session_state.dataframe, year=int(selected_year))
 
-		# Matrix confusion relation between genre and country
-		gender_country(df=st.session_state.dataframe, year=int(selected_year))
+			# Number of people interested by category in a year
+			interest_category(df=st.session_state.dataframe, year=int(selected_year))
+
+			col1, col2 = st.columns(2)
+			with col1:
+				# Matrix confusion relation between product status and gender
+				gender_status(df=st.session_state.dataframe, year=int(selected_year))
+			with col2:
+				# Matrix confusion relation between product state and country
+				status_country(df=st.session_state.dataframe, year=int(selected_year))
+
+			# Matrix confusion relation between genre and country
+			gender_country(df=st.session_state.dataframe, year=int(selected_year))
 
 
 # First call to the config page function
