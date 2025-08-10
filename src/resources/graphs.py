@@ -1,13 +1,14 @@
 # 3pps
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
 # Own modules
-from utils import check_credentials, config_streamlit_page, obtain_top
+from utils import check_credentials, config_streamlit_page, obtain_top, summarize_year
 
 # List of month names
-months_names = [
+MONTHS_NAMES: list[str] = [
 	"January",
 	"February",
 	"March",
@@ -29,8 +30,11 @@ def money_month(df: pd.DataFrame, year: int) -> None:
 
 	Args:
 		df: The DataFrame containing sales data.
-		year: The year for which to calculate the total money earned per month.
+		year: The selected year.
 	"""
+
+	# Title of the plot
+	st.subheader(f"Money Earned per Month in {year}")
 
 	# First we filter by year
 	df_filtered = df[df["Fecha de venta"].dt.year == year].copy()
@@ -47,34 +51,57 @@ def money_month(df: pd.DataFrame, year: int) -> None:
 
 	# Convert to DataFrame and include month names
 	df_money_month = pd.DataFrame(
-		{"Mes": months_names, "Dinero": df_money_month.values}
+		{"Mes": MONTHS_NAMES, "Dinero": df_money_month.values}
 	)
 
 	# Ensure correct order with pd.Categorical
 	df_money_month["Mes"] = pd.Categorical(
-		df_money_month["Mes"], categories=months_names, ordered=True
+		df_money_month["Mes"], categories=MONTHS_NAMES, ordered=True
 	)
 
-	# Show graph in Streamlit
-	st.subheader(f"Money earned per month in {year}")
-	st.bar_chart(df_money_month.set_index("Mes"), x_label="Month", y_label="Cash")
+	# Create a bar chart
+	fig = px.bar(
+		df_money_month,
+		x="Mes",
+		y="Dinero",
+		labels={"Dinero": "Income (€)", "Mes": "Month"},
+		color="Mes",
+		color_discrete_sequence=px.colors.qualitative.Pastel,
+	)
+
+	# Update layout
+	fig.update_layout(
+		xaxis_title="Month",
+		yaxis_title="Income (€)",
+		xaxis_tickangle=-45,
+		showlegend=False,
+		coloraxis_showscale=False,
+	)
+
+	# Add value labels on bars
+	fig.update_traces(texttemplate="%{y:.0f}€", textposition="outside")
+
+	# Display the plot in Streamlit
+	st.plotly_chart(fig, use_container_width=True)
 
 
 def product_month(df: pd.DataFrame, year: int) -> None:
-	"""_summary_
+	"""
+	Plot information per month, like products sold, top 3, and more.
 
 	Args:
-		df (pd.DataFrame): _description_
-		year (int): _description_
+		df: The DataFrame containing sales data.
+		year: The selected year.
 	"""
 
-	st.subheader(f"Products sold per month in {year}")
+	# Title of the plot
+	st.subheader(f"Products Sold per Month in {year}")
 
+	# Create columns for the plots
 	col1, col2 = st.columns(2, gap="large")
 
 	# Filter data by year
 	df_filtered_year = df[df["Fecha de venta"].dt.year == year].copy()
-
 	df_filtered = df_filtered_year.copy()
 	df_filtered["Mes"] = df_filtered_year["Fecha de venta"].dt.month
 	df_filtered = (
@@ -82,14 +109,14 @@ def product_month(df: pd.DataFrame, year: int) -> None:
 	)
 
 	# Convert month numbers to month names
-	df_filtered["Mes"] = df_filtered["Mes"].apply(lambda x: months_names[x - 1])
+	df_filtered["Mes"] = df_filtered["Mes"].apply(lambda x: MONTHS_NAMES[x - 1])
 
 	# Ensure correct order with pd.Categorical
 	df_filtered["Mes"] = pd.Categorical(
-		df_filtered["Mes"], categories=months_names, ordered=True
+		df_filtered["Mes"], categories=MONTHS_NAMES, ordered=True
 	)
 
-	# Pivot for Streamlit bar chart
+	# Pivot for plotting
 	df_pivotado = df_filtered.pivot(
 		index="Mes", columns="Tipo producto", values="count"
 	).fillna(0)
@@ -98,20 +125,47 @@ def product_month(df: pd.DataFrame, year: int) -> None:
 	df_pivotado = df_pivotado.loc[(df_pivotado > 0).any(axis=1)]
 
 	with col1:
-		# Display chart in Streamlit
-		st.bar_chart(df_pivotado, horizontal=True, x_label="Products", y_label="Month")
+		# Create horizontal bar chart with Plotly
+		fig = go.Figure()
+
+		# Add a bar for each product type
+		for product_type in df_pivotado.columns:
+			fig.add_trace(
+				go.Bar(
+					y=df_pivotado.index,
+					x=df_pivotado[product_type],
+					name=product_type,
+					orientation="h",
+				)
+			)
+
+		fig.update_layout(
+			xaxis_title="Number of Products",
+			yaxis_title="Month",
+			barmode="stack",
+			height=400,
+			legend=dict(
+				orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
+			),
+		)
+
+		# Display the plot in Streamlit
+		st.plotly_chart(fig, use_container_width=True)
+
 	with col2:
 		top_3_products = obtain_top(df=df_filtered_year, top=3, column="Tipo producto")
-		st.metric(label="Top 3 products", value=str(top_3_products), border=True)
+		st.metric(
+			label="Top 3 Products", value=str(", ".join(top_3_products)), border=True
+		)
 
 		a, b = st.columns(2)
 		a.metric(
-			label="Total products sold",
+			label="Total Products Sold",
 			value=int(df_filtered_year["Tipo producto"].value_counts().sum()),
 			border=True,
 		)
 		b.metric(
-			label="Total cash obtained",
+			label="Total Cash Obtained",
 			value=str(float(df_filtered_year["Precio producto"].sum().round(4))) + " €",
 			border=True,
 		)
@@ -123,11 +177,10 @@ def interest_category(df: pd.DataFrame, year: int) -> None:
 
 	Args:
 		df: The DataFrame containing sales data.
-		year: The year for which to filter and analyze the data.
-
-	Displays:
-		A bar chart in Streamlit showing the number of likes per product category.
+		year: The selected year.
 	"""
+
+	st.subheader(f"Likes by Category in {year}")
 
 	# Filter data for the selected year
 	df_filtered = df[df["Fecha de venta"].dt.year == year].copy()
@@ -140,11 +193,33 @@ def interest_category(df: pd.DataFrame, year: int) -> None:
 		{"Tipo producto": df_filtered.index, "Numero de mg": df_filtered.values}
 	)
 
-	# Show graph in Streamlit
-	st.subheader(f"Likes by Category in {year}")
-	st.bar_chart(
-		df_filtered.set_index("Tipo producto"), x_label="Product Type", y_label="Likes"
+	# Sort by likes in descending order for better visualization
+	df_filtered = df_filtered.sort_values("Numero de mg", ascending=False)
+
+	# Create bar chart with Plotly
+	fig = px.bar(
+		df_filtered,
+		x="Tipo producto",
+		y="Numero de mg",
+		labels={"Tipo producto": "Product Type", "Numero de mg": "Number of Likes"},
+		color="Tipo producto",
+		color_continuous_scale=px.colors.qualitative.Pastel,
 	)
+
+	# Update layout for better appearance
+	fig.update_layout(
+		xaxis_title="Product Type",
+		yaxis_title="Number of Likes",
+		xaxis_tickangle=-45,
+		showlegend=False,
+		height=500,
+	)
+
+	# Add value labels on top of bars
+	fig.update_traces(texttemplate="%{y}", textposition="outside")
+
+	# Display the plot in Streamlit
+	st.plotly_chart(fig, use_container_width=True)
 
 
 def gender_status(df: pd.DataFrame, year: int) -> None:
@@ -152,8 +227,8 @@ def gender_status(df: pd.DataFrame, year: int) -> None:
 	Calculate and visualize the gender distribution by product status for a given year.
 
 	Args:
-		df: The sales data.
-		year: The year to filter the data for.
+		df: The DataFrame containing sales data.
+		year: The selected year.
 	"""
 
 	st.subheader(f"Gender Status Heatmap in {year}")
@@ -193,11 +268,8 @@ def status_country(df: pd.DataFrame, year: int) -> None:
 	Calculate and visualize the product status distribution by country for a given year.
 
 	Args:
-		df: The sales data.
-		year: The year to filter the data for.
-
-	Returns:
-		plotly.graph_objs.Figure: The heatmap figure.
+		df: The DataFrame containing sales data.
+		year: The selected year.
 	"""
 
 	st.subheader(f"Product Status by Country Heatmap in {year}")
@@ -227,7 +299,8 @@ def status_country(df: pd.DataFrame, year: int) -> None:
 	fig.update_layout(
 		xaxis_title="Product Status",
 		yaxis_title="Country",
-		coloraxis_showscale=False,  # Hide the colorbar
+		# Hide the colorbar
+		coloraxis_showscale=False,
 	)
 
 	# Display the plot in Streamlit
@@ -239,10 +312,8 @@ def gender_country(df: pd.DataFrame, year: int) -> None:
 	Calculate and visualize the gender distribution by country for a given year.
 
 	Args:
-		df: The sales data.
-		year: The year to filter the data for.
-	Returns:
-		None: Displays the combined visualization in Streamlit
+		df: The DataFrame containing sales data.
+		year: The selected year.
 	"""
 
 	st.subheader(f"Gender Distribution by Country in {year}")
@@ -279,7 +350,7 @@ def gender_country(df: pd.DataFrame, year: int) -> None:
 		fig.update_layout(
 			xaxis_title="Gender",
 			yaxis_title="Country",
-			coloraxis_showscale=False,  # Hide the colorbar
+			coloraxis_showscale=False,
 		)
 		st.plotly_chart(fig, use_container_width=True)
 	with col2:
@@ -297,12 +368,20 @@ def gender_country(df: pd.DataFrame, year: int) -> None:
 		fig.update_layout(
 			xaxis_title="Gender",
 			yaxis_title="Country",
-			coloraxis_showscale=False,  # Hide the colorbar
+			coloraxis_showscale=False,
 		)
 		st.plotly_chart(fig, use_container_width=True)
 
 
 def compare_products_years(df: pd.DataFrame, years: list[int]) -> None:
+	"""
+	Compare product sold by type and year.
+
+	Args:
+		df: The DataFrame containing sales data.
+		years: The selected years.
+	"""
+
 	st.subheader(
 		"Comparison of Products Sold by Type and Year in "
 		f"{str(', '.join([str(year) for year in years]))}"
@@ -320,6 +399,7 @@ def compare_products_years(df: pd.DataFrame, years: list[int]) -> None:
 	)
 	df_pivot.columns = ["Tipo producto", "Año", "Cantidad"]
 	df_pivot["Año"] = df_pivot["Año"].astype(str)
+
 	fig = px.bar(
 		df_pivot,
 		x="Tipo producto",
@@ -337,13 +417,23 @@ def compare_products_years(df: pd.DataFrame, years: list[int]) -> None:
 		barmode="group",
 		xaxis_tickangle=-45,
 	)
+
 	fig.update_traces(
 		textfont_size=12, textangle=0, textposition="outside", cliponaxis=False
 	)
+
 	st.plotly_chart(fig, use_container_width=True)
 
 
 def compare_income_month_years(df: pd.DataFrame, years: list[int]) -> None:
+	"""
+	Compare income per month for multiple years.
+
+	Args:
+		df: The DataFrame containing sales data.
+		years: The selected years.
+	"""
+
 	st.subheader(
 		"Comparison of Income by Month and Year in "
 		f"{str(', '.join([str(year) for year in years]))}"
@@ -410,6 +500,37 @@ def compare_income_month_years(df: pd.DataFrame, years: list[int]) -> None:
 	st.plotly_chart(fig, use_container_width=True)
 
 
+def flow_money(df: pd.DataFrame, years: list[int]) -> None:
+	"""
+	Compara flujo de ingresos y métricas para varios años.
+
+	Args:
+		df: The DataFrame containing sales data.
+		years: The selected years.
+	"""
+
+	st.subheader(
+		f"Financial Flow Analysis: {str(', '.join([str(year) for year in years]))}"
+	)
+
+	monthly_all, annual_all = [], []
+
+	for y in years:
+		m, a = summarize_year(df, y)
+		monthly_all.append(m)
+		annual_all.append(a)
+
+	annual_df = pd.DataFrame(annual_all)
+
+	col1, col2, col3 = st.columns(3)
+	
+	col1.metric("Total Revenue", f"{annual_df['Total_Revenue'].sum():,.2f} €")
+	col2.metric("Total Products", f"{annual_df['Total_Products'].sum():,}")
+	col3.metric("Total Visits", f"{annual_df['Total_Visits'].sum():,}")
+
+	st.dataframe(annual_df.round(2), use_container_width=True)
+
+
 def display_all_graphs(credentials_status: bool) -> None:
 	"""
 	Displays various graphs based on the availability of credentials.
@@ -435,6 +556,7 @@ def display_all_graphs(credentials_status: bool) -> None:
 			compare_income_month_years(
 				df=st.session_state.dataframe, years=selected_years
 			)
+			flow_money(df=st.session_state.dataframe, years=selected_years)
 		else:
 			selected_year: str = st.selectbox("Select a year", available_years)
 
