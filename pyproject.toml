@@ -22,6 +22,7 @@ dependencies = [
     "pandas==2.3.3",
     "plotly==6.3.0",
     "streamlit==1.50.0",
+    "watchdog==6.0.0; sys_platform == 'darwin'"
 ]
 
 [dependency-groups]

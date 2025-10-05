@@ -1,3 +1,16 @@
+<p align="center">
+  <img src="./src/images/logo.png" height="250"/>
+  <br/>
+</p>
+
+<p align="center">
+  <a href="https://github.com/danibcorr/streamlit-sales-suite/actions/workflows/workflow.yaml"><img src="https://github.com/danibcorr/streamlit-sales-suite/actions/workflows/workflow.yaml/badge.svg"></a>
+  <img src="https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-blue">
+  <a href="https://github.com/danibcorr/streamlit-sales-suite/blob/main/LICENSE" target="_blank">
+      <img src="https://img.shields.io/github/license/danibcorr/streamlit-sales-suite" alt="License">
+  </a>
+</p>
+
 # Streamline Sales Suite
 
 An all-in-one, data-driven sales analysis and visualization platform. Built for

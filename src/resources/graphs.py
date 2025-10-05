@@ -523,7 +523,7 @@ def flow_money(df: pd.DataFrame, years: list[int]) -> None:
 	annual_df = pd.DataFrame(annual_all)
 
 	col1, col2, col3 = st.columns(3)
-	
+
 	col1.metric("Total Revenue", f"{annual_df['Total_Revenue'].sum():,.2f} €")
 	col2.metric("Total Products", f"{annual_df['Total_Products'].sum():,}")
 	col3.metric("Total Visits", f"{annual_df['Total_Visits'].sum():,}")
