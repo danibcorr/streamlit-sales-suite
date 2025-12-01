@@ -27,7 +27,7 @@ dependencies = [
 
 [dependency-groups]
 pipeline = [
-    "bandit==1.8.6",
+    "bandit==1.9.2",
     "complexipy==4.2.0",
     "mypy==1.19.0",
     "pytest==8.4.2",
