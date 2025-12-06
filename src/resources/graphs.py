@@ -7,21 +7,7 @@ import streamlit as st
 # Own modules
 from utils import check_credentials, config_streamlit_page, obtain_top, summarize_year
 
-# List of month names
-MONTHS_NAMES: list[str] = [
-	"January",
-	"February",
-	"March",
-	"April",
-	"May",
-	"June",
-	"July",
-	"August",
-	"September",
-	"October",
-	"November",
-	"December",
-]
+from ..config import MONTHS_NAMES
 
 
 def money_month(df: pd.DataFrame, year: int) -> None:

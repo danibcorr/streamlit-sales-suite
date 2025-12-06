@@ -38,10 +38,16 @@ lint:
 code_check:
 	@echo "Running static code checks..."
 	@uv run mypy $(SRC_PROJECT_NAME)/
-	@uv run complexipy -d low $(SRC_PROJECT_NAME)/
+	@uv run complexipy -f $(SRC_PROJECT_NAME)/
 	@uv run bandit -r $(SRC_PROJECT_NAME)/ --exclude $(SRC_PROJECT_TESTS)
 	@echo "✅ Code and security checks complete."
 
+# Check dead code
+check-dead-code:
+	@echo "Checking dead code..."
+	@uv run deadcode $(SRC_PROJECT_NAME)
+	@echo "✅ Dead code check complete."
+	
 # Run code checks
 pipeline: clean lint code_check
 	@echo "✅ Pipeline complete."
