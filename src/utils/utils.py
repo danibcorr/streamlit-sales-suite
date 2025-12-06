@@ -6,7 +6,8 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from ..config import MONTHS_NAMES
+# Own modules
+from config import MONTHS_NAMES
 
 
 def config_streamlit_page(page_name: str) -> None:

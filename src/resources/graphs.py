@@ -5,9 +5,8 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # Own modules
+from config import MONTHS_NAMES
 from utils import check_credentials, config_streamlit_page, obtain_top, summarize_year
-
-from ..config import MONTHS_NAMES
 
 
 def money_month(df: pd.DataFrame, year: int) -> None:
