@@ -34,7 +34,7 @@ def check_credentials() -> bool:
 	"""
 
 	@st.cache_data
-	def credentials_available():
+	def credentials_available() -> None:
 		# Create an empty container that can be updated
 		message_container = st.empty()
 

@@ -5,7 +5,7 @@ import streamlit as st
 from utils import config_streamlit_page
 
 
-def discount_calculator():
+def discount_calculator() -> None:
 	"""
 	A Streamlit-based interactive discount calculator.
 	"""
