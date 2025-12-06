@@ -12,15 +12,15 @@ def discount_calculator():
 
 	# Input fields with improved layout
 	with st.container():
-		original_price = st.number_input(
+		original_price: float = st.number_input(
 			"Price before discount (€)", min_value=0.0, value=0.0, format="%.2f"
 		)
-		discount = st.slider(
+		discount: int = st.slider(
 			"Discount (%)", min_value=0, max_value=100, value=0, step=1
 		)
 
-		saving = original_price * (discount / 100)
-		price_after_discount = original_price - saving
+		saving: float = original_price * (discount / 100)
+		price_after_discount: float = original_price - saving
 
 		# Display results in columns for better layout
 		col1, col2 = st.columns(2)
