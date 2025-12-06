@@ -12,8 +12,7 @@ updates:
   - package-ecosystem: "uv"
     directory: "/"
     schedule:
-      interval: "monthly"
-    target-branch: "dev"
+      interval: "weekly"
     labels:
       - "dependencies"
       - "python"
