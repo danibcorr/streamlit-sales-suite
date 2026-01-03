@@ -156,57 +156,6 @@ def product_month(df: pd.DataFrame, year: int) -> None:
 		)
 
 
-def interest_category(df: pd.DataFrame, year: int) -> None:
-	"""
-	Analyzes and visualizes the number of likes per product category for a given year.
-
-	Args:
-		df: The DataFrame containing sales data.
-		year: The selected year.
-	"""
-
-	st.subheader(f"Likes by Category in {year}")
-
-	# Filter data for the selected year
-	df_filtered = df[df["Fecha de venta"].dt.year == year].copy()
-
-	# Group by 'Tipo producto' and count 'Numero de mg'
-	df_filtered = df_filtered.groupby("Tipo producto")["Numero de mg"].count()
-
-	# Convert the result to a DataFrame
-	df_filtered = pd.DataFrame(
-		{"Tipo producto": df_filtered.index, "Numero de mg": df_filtered.values}
-	)
-
-	# Sort by likes in descending order for better visualization
-	df_filtered = df_filtered.sort_values("Numero de mg", ascending=False)
-
-	# Create bar chart with Plotly
-	fig = px.bar(
-		df_filtered,
-		x="Tipo producto",
-		y="Numero de mg",
-		labels={"Tipo producto": "Product Type", "Numero de mg": "Number of Likes"},
-		color="Tipo producto",
-		color_continuous_scale=px.colors.qualitative.Pastel,
-	)
-
-	# Update layout for better appearance
-	fig.update_layout(
-		xaxis_title="Product Type",
-		yaxis_title="Number of Likes",
-		xaxis_tickangle=-45,
-		showlegend=False,
-		height=500,
-	)
-
-	# Add value labels on top of bars
-	fig.update_traces(texttemplate="%{y}", textposition="outside")
-
-	# Display the plot in Streamlit
-	st.plotly_chart(fig, use_container_width=True)
-
-
 def gender_status(df: pd.DataFrame, year: int) -> None:
 	"""
 	Calculate and visualize the gender distribution by product status for a given year.
@@ -511,7 +460,6 @@ def flow_money(df: pd.DataFrame, years: list[int]) -> None:
 
 	col1.metric("Total Revenue", f"{annual_df['Total_Revenue'].sum():,.2f} €")
 	col2.metric("Total Products", f"{annual_df['Total_Products'].sum():,}")
-	col3.metric("Total Visits", f"{annual_df['Total_Visits'].sum():,}")
 
 	st.dataframe(annual_df.round(2), use_container_width=True)
 
@@ -550,9 +498,6 @@ def display_all_graphs(credentials_status: bool) -> None:
 
 			# Money earned per month/year
 			money_month(df=st.session_state.dataframe, year=int(selected_year))
-
-			# Number of people interested by category in a year
-			interest_category(df=st.session_state.dataframe, year=int(selected_year))
 
 			col1, col2 = st.columns(2)
 			with col1:
