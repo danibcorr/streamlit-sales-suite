@@ -88,9 +88,6 @@ def summarize_year(df: pd.DataFrame, year: int) -> tuple[pd.DataFrame, dict]:
 		.agg(
 			Revenue=("Precio producto", "sum"),
 			Products_Sold=("Precio producto", "count"),
-			Total_Visits=("Numero Visitas", "sum"),
-			Total_Likes=("Numero de mg", "sum"),
-			Avg_Duration=("Duracion de la publicacion (dias)", "mean"),
 			Avg_Discount=("Descuentos (%)", "mean"),
 		)
 		.reindex(range(1, 13), fill_value=0)
@@ -105,12 +102,7 @@ def summarize_year(df: pd.DataFrame, year: int) -> tuple[pd.DataFrame, dict]:
 		"Total_Revenue": monthly["Revenue"].sum(),
 		"Total_Products": monthly["Products_Sold"].sum(),
 		"Avg_Price": df_year["Precio producto"].mean(),
-		"Total_Visits": monthly["Total_Visits"].sum(),
-		"Total_Likes": monthly["Total_Likes"].sum(),
-		"Avg_Duration": monthly["Avg_Duration"].mean(),
-		"Avg_Discount": monthly["Avg_Discount"].mean()
-		if monthly["Total_Visits"].sum()
-		else 0,
+		"Avg_Discount": monthly["Avg_Discount"].mean(),
 	}
 
 	return monthly, annual
