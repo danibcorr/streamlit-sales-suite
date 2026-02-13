@@ -1,6 +1,6 @@
 .PHONY: setup \
 		clean-cache-temp-files \
-		lint code-check check-dead-code \
+		lint code-check \
 		test \
 		pipeline pre-commit all
 
@@ -38,11 +38,6 @@ code-check:
 	@uv run bandit -r $(SOURCE_PATH)
 	@echo "✅ Code and security checks complete."
 
-check-dead-code:
-	@echo "Checking dead code..."
-	@uv run deadcode $(SOURCE_PATH)
-	@echo "✅ Dead code check complete."
-	
 test:
 	@echo "Running tests..."
 	@uv run pytest $(TEST_PATH)

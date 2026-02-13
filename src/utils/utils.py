@@ -139,4 +139,4 @@ def plot_line(
 	"""
 
 	fig = px.line(df, x=x, y=y, color=color, markers=True, title=title, labels=labels)
-	st.plotly_chart(fig, use_container_width=True)
+	st.plotly_chart(fig, width="stretch")

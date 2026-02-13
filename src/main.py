@@ -87,7 +87,7 @@ def streamlit_configuration() -> None:
 	st.sidebar.subheader("About")
 	st.sidebar.image(
 		image="src/images/nikola-duza-fi6kmznklGQ-unsplash.jpg",
-		use_container_width=True,
+		width="stretch",
 	)
 	st.sidebar.markdown(
 		"""

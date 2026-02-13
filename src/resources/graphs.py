@@ -55,7 +55,7 @@ def money_month(df: pd.DataFrame, year: int) -> None:
 	)
 	fig.update_traces(texttemplate="%{y:.0f}€", textposition="outside")
 
-	st.plotly_chart(fig, use_container_width=True)
+	st.plotly_chart(fig, width="stretch")
 
 
 def product_month(df: pd.DataFrame, year: int) -> None:
@@ -121,7 +121,7 @@ def product_month(df: pd.DataFrame, year: int) -> None:
 			),
 		)
 
-		st.plotly_chart(fig, use_container_width=True)
+		st.plotly_chart(fig, width="stretch")
 
 	with metrics_col:
 		top_3_products = obtain_top(df=yearly_sales, top=3, column="Tipo producto")
@@ -178,7 +178,7 @@ def gender_status(df: pd.DataFrame, year: int) -> None:
 		xaxis_title="Gender", yaxis_title="Product Status", coloraxis_showscale=False
 	)
 
-	st.plotly_chart(fig, use_container_width=True)
+	st.plotly_chart(fig, width="stretch")
 
 
 def status_country(df: pd.DataFrame, year: int) -> None:
@@ -219,7 +219,7 @@ def status_country(df: pd.DataFrame, year: int) -> None:
 		coloraxis_showscale=False,
 	)
 
-	st.plotly_chart(fig, use_container_width=True)
+	st.plotly_chart(fig, width="stretch")
 
 
 def gender_country(df: pd.DataFrame, year: int) -> None:
@@ -266,7 +266,7 @@ def gender_country(df: pd.DataFrame, year: int) -> None:
 			yaxis_title="Country",
 			coloraxis_showscale=False,
 		)
-		st.plotly_chart(fig, use_container_width=True)
+		st.plotly_chart(fig, width="stretch")
 	with male_col:
 		fig = px.imshow(
 			male_by_country,
@@ -280,7 +280,7 @@ def gender_country(df: pd.DataFrame, year: int) -> None:
 			yaxis_title="Country",
 			coloraxis_showscale=False,
 		)
-		st.plotly_chart(fig, use_container_width=True)
+		st.plotly_chart(fig, width="stretch")
 
 
 def compare_products_years(df: pd.DataFrame, years: list[int]) -> None:
@@ -334,7 +334,7 @@ def compare_products_years(df: pd.DataFrame, years: list[int]) -> None:
 		textfont_size=12, textangle=0, textposition="outside", cliponaxis=False
 	)
 
-	st.plotly_chart(fig, use_container_width=True)
+	st.plotly_chart(fig, width="stretch")
 
 
 def compare_income_month_years(df: pd.DataFrame, years: list[int]) -> None:
@@ -355,19 +355,17 @@ def compare_income_month_years(df: pd.DataFrame, years: list[int]) -> None:
 		f"{str(', '.join([str(year) for year in years]))}"
 	)
 
-	filtered_by_years = df[df["Fecha de venta"].dt.year.isin(years)]
-	filtered_by_years["Fecha de venta"] = pd.to_datetime(
-		filtered_by_years["Fecha de venta"]
-	)
-
-	filtered_by_years["Año"] = filtered_by_years["Fecha de venta"].dt.year.astype(str)
-	filtered_by_years["Mes"] = filtered_by_years["Fecha de venta"].dt.month
-	filtered_by_years["Mes_nombre"] = filtered_by_years["Fecha de venta"].dt.strftime(
-		"%B"
-	)
-	filtered_by_years["Año_Mes"] = filtered_by_years["Fecha de venta"].dt.strftime(
-		"%Y-%m"
-	)
+	filtered_by_years = df[df["Fecha de venta"].dt.year.isin(years)].copy()
+	filtered_by_years.loc[:, "Año"] = filtered_by_years[
+		"Fecha de venta"
+	].dt.year.astype(str)
+	filtered_by_years.loc[:, "Mes"] = filtered_by_years["Fecha de venta"].dt.month
+	filtered_by_years.loc[:, "Mes_nombre"] = filtered_by_years[
+		"Fecha de venta"
+	].dt.strftime("%B")
+	filtered_by_years.loc[:, "Año_Mes"] = filtered_by_years[
+		"Fecha de venta"
+	].dt.strftime("%Y-%m")
 
 	income_by_month_year = (
 		filtered_by_years.groupby(["Año", "Mes", "Mes_nombre", "Año_Mes"])[
@@ -415,7 +413,7 @@ def compare_income_month_years(df: pd.DataFrame, years: list[int]) -> None:
 		cliponaxis=False,
 	)
 
-	st.plotly_chart(fig, use_container_width=True)
+	st.plotly_chart(fig, width="stretch")
 
 
 def flow_money(df: pd.DataFrame, years: list[int]) -> None:
@@ -452,7 +450,75 @@ def flow_money(df: pd.DataFrame, years: list[int]) -> None:
 		"Total Products", f"{annual_overview_df['Total_Products'].sum():,}"
 	)
 
-	st.dataframe(annual_overview_df.round(2), use_container_width=True)
+	st.dataframe(annual_overview_df.round(2), width="stretch")
+
+
+def category_sales_by_period(df: pd.DataFrame, years: list[int]) -> None:
+	"""
+	Displays product categories sold per month with quantity
+	and total price for the given year(s).
+
+	Args:
+		df: The DataFrame containing sales data.
+		years: The year(s) to filter and visualize.
+
+	Returns:
+		None.
+	"""
+
+	st.subheader(
+		f"Category Sales by Month in {str(', '.join([str(year) for year in years]))}"
+	)
+
+	filtered_sales = df[df["Fecha de venta"].dt.year.isin(years)].copy()
+	filtered_sales["Año"] = filtered_sales["Fecha de venta"].dt.year
+	filtered_sales["Mes"] = filtered_sales["Fecha de venta"].dt.month
+
+	all_months = sorted(filtered_sales["Mes"].unique())
+	month_names = [MONTHS_NAMES[m - 1] for m in all_months]
+
+	selected_month_name = st.selectbox("Select a month", month_names)
+	selected_month = all_months[month_names.index(selected_month_name)]
+
+	month_data = filtered_sales[filtered_sales["Mes"] == selected_month]
+
+	summary = (
+		month_data.groupby(["Tipo producto", "Año"])
+		.agg(
+			Quantity=("Tipo producto", "count"),
+			Total_Price=("Precio producto", "sum"),
+		)
+		.reset_index()
+	)
+	summary["Año"] = summary["Año"].astype(str)
+
+	col1, col2 = st.columns(2)
+
+	with col1:
+		fig = px.bar(
+			summary,
+			x="Tipo producto",
+			y="Quantity",
+			color="Año",
+			barmode="group",
+			title="Quantity by Category",
+			color_discrete_sequence=px.colors.qualitative.Pastel,
+		)
+		fig.update_layout(xaxis_tickangle=-45)
+		st.plotly_chart(fig, width="stretch")
+
+	with col2:
+		fig = px.bar(
+			summary,
+			x="Tipo producto",
+			y="Total_Price",
+			color="Año",
+			barmode="group",
+			title="Total Price (€) by Category",
+			color_discrete_sequence=px.colors.qualitative.Pastel,
+		)
+		fig.update_layout(xaxis_tickangle=-45)
+		st.plotly_chart(fig, width="stretch")
 
 
 def display_all_graphs(has_valid_credentials: bool) -> None:
@@ -486,6 +552,9 @@ def display_all_graphs(has_valid_credentials: bool) -> None:
 				df=st.session_state.dataframe, years=selected_years
 			)
 			flow_money(df=st.session_state.dataframe, years=selected_years)
+			category_sales_by_period(
+				df=st.session_state.dataframe, years=selected_years
+			)
 		else:
 			selected_year: str = st.selectbox("Select a year", available_years)
 
@@ -499,6 +568,9 @@ def display_all_graphs(has_valid_credentials: bool) -> None:
 				status_country(df=st.session_state.dataframe, year=int(selected_year))
 
 			gender_country(df=st.session_state.dataframe, year=int(selected_year))
+			category_sales_by_period(
+				df=st.session_state.dataframe, years=[int(selected_year)]
+			)
 
 
 config_streamlit_page(page_name="Graphs")
