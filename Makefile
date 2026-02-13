@@ -1,22 +1,22 @@
-# Declare all phony targets
-.PHONY: install clean lint code_check pipeline all
+.PHONY: setup \
+		clean-cache-temp-files \
+		lint code-check check-dead-code \
+		test \
+		pipeline pre-commit all
 
-# Default target
 .DEFAULT_GOAL := all
 
-# Variables
-SRC_PROJECT_NAME ?= src
-SRC_PROJECT_TESTS ?= tests
-SRC_ALL ?= .
+SOURCE_PATH ?= src
+TEST_PATH ?= tests
+PATH_PROJECT_ROOT ?= .
 
-# Install project dependencies
-install:
+setup:
 	@echo "Installing dependencies..."
-	@uv sync --all-groups --all-extras
+	@uv sync --all-extras
+	@uv run pre-commit install
 	@echo "✅ Dependencies installed."
 
-# Clean cache and temporary files
-clean:
+clean-cache-temp-files:
 	@echo "Cleaning cache and temporary files..."
 	@find . -type d -name __pycache__ -exec rm -rf {} +
 	@find . -type d -name .pytest_cache -exec rm -rf {} +
@@ -24,34 +24,35 @@ clean:
 	@find . -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
 	@echo "✅ Clean complete."
 
-# Check code formatting and linting
 lint:
 	@echo "Running lint checks..."
-	@uv run isort $(SRC_ALL)/
-	@uv run ruff format $(SRC_ALL)/
-	@uv run ruff check $(SRC_ALL)/
-	@uv run nbqa ruff $(SRC_ALL)/
-	@uv run nbqa isort $(SRC_ALL)/
+	@uv run ruff format $(PATH_PROJECT_ROOT)
+	@uv run ruff check --fix $(PATH_PROJECT_ROOT)
+	@uv run isort $(PATH_PROJECT_ROOT)
 	@echo "✅ Linting complete."
 
-# Static analysis and security checks
-code_check:
+code-check:
 	@echo "Running static code checks..."
-	@uv run mypy $(SRC_PROJECT_NAME)/
-	@uv run complexipy -f $(SRC_PROJECT_NAME)/
-	@uv run bandit -r $(SRC_PROJECT_NAME)/ --exclude $(SRC_PROJECT_TESTS)
+	@uv run mypy $(SOURCE_PATH)
+	@uv run complexipy -f $(SOURCE_PATH)
+	@uv run bandit -r $(SOURCE_PATH)
 	@echo "✅ Code and security checks complete."
 
-# Check dead code
 check-dead-code:
 	@echo "Checking dead code..."
-	@uv run deadcode $(SRC_PROJECT_NAME)
+	@uv run deadcode $(SOURCE_PATH)
 	@echo "✅ Dead code check complete."
 	
-# Run code checks
-pipeline: clean lint code_check
+test:
+	@echo "Running tests..."
+	@uv run pytest $(TEST_PATH)
+	@echo "✅ Tests complete."
+
+pipeline: clean-cache-temp-files lint code-check
 	@echo "✅ Pipeline complete."
 
-# Run full workflow including install
-all: install pipeline
+pre-commit: clean-cache-temp-files lint code-check
+	@echo "✅ Pipeline pre-commit complete."
+
+all: setup pipeline
 	@echo "✅ All tasks complete."
