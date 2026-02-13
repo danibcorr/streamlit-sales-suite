@@ -5,6 +5,9 @@ import json
 import pandas as pd
 import streamlit as st
 
+# Own modules
+from dataframe_schema import SalesDataFrameSchema
+
 
 def upload_credentials() -> None:
 	"""
@@ -41,8 +44,14 @@ def upload_credentials() -> None:
 			st.sidebar.success("Credentials successfully uploaded", icon="✅")
 
 			if "path" in parsed_credentials:
-				st.session_state.dataframe = pd.read_excel(parsed_credentials["path"])
-				st.sidebar.success("File successfully loaded", icon="✅")
+				df = pd.read_excel(parsed_credentials["path"])
+				is_valid, error_msg = SalesDataFrameSchema.validate(df)
+
+				if is_valid:
+					st.session_state.dataframe = df
+					st.sidebar.success("File successfully loaded", icon="✅")
+				else:
+					st.sidebar.error(f"Invalid DataFrame: {error_msg}", icon="⚠️")
 			else:
 				st.sidebar.error("Invalid credentials: Missing path key.", icon="⚠️")
 
