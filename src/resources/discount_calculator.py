@@ -7,10 +7,14 @@ from utils import config_streamlit_page
 
 def discount_calculator() -> None:
 	"""
-	A Streamlit-based interactive discount calculator.
+	Renders an interactive discount calculator that accepts
+	an original price and discount percentage, then displays
+	the final price and total savings as Streamlit metrics.
+
+	Returns:
+		None.
 	"""
 
-	# Input fields with improved layout
 	with st.container():
 		original_price: float = st.number_input(
 			"Price before discount (€)", min_value=0.0, value=0.0, format="%.2f"
@@ -22,7 +26,6 @@ def discount_calculator() -> None:
 		saving: float = original_price * (discount / 100)
 		price_after_discount: float = original_price - saving
 
-		# Display results in columns for better layout
 		col1, col2 = st.columns(2)
 		with col1:
 			st.metric(
@@ -32,8 +35,5 @@ def discount_calculator() -> None:
 			st.metric(label="You Save", value=f"€{saving:.2f}", border=True)
 
 
-# First call to the config page function
 config_streamlit_page(page_name="Discount Calculator")
-
-# Call the discount calculator function
 discount_calculator()

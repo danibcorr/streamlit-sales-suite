@@ -18,23 +18,27 @@ runs:
   using: composite
   steps:
     - name: Install uv and set the Python version
-      uses: astral-sh/setup-uv@v5
+      uses: astral-sh/setup-uv@v7
       with:
+        version: "0.10.2"
         python-version: ${{ inputs.src-python-version }}
+        enable-cache: true
 
     - name: Install dependencies with uv
-      id: install-deps
       shell: bash
       run: |
-        uv sync --all-groups --all-extras
+        ARGS=""
+        if [ "${{ inputs.uv-extra }}" = "--all-extras" ] || [ -z "${{ inputs.uv-group }}${{ inputs.uv-extra }}" ]; then
+          ARGS="--all-extras"
+        else
+          [ -n "${{ inputs.uv-group }}" ] && ARGS="$ARGS --group ${{ inputs.uv-group }}"
+          [ -n "${{ inputs.uv-extra }}" ] && ARGS="$ARGS --extra ${{ inputs.uv-extra }}"
+        fi
+        uv sync $ARGS
 
     - name: Verify uv and environment
-      id: verify
       shell: bash
       run: |
-        echo "uv version:"
         uv --version
-        echo "Virtual environments:"
         uv venv list
-        echo "Python version:"
         uv run python --version

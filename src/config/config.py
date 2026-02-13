@@ -1,7 +1,6 @@
 # Standard libraries
 from typing import Final
 
-# List of month names
 MONTHS_NAMES: Final[tuple[str, ...]] = (
 	"January",
 	"February",

@@ -12,41 +12,35 @@ from config import MONTHS_NAMES
 
 def config_streamlit_page(page_name: str) -> None:
 	"""
-	Configures the Streamlit page settings based on the given page name.
+	Sets the displayed title of the current Streamlit page.
 
 	Args:
-		page_name: The name of the page that is being configured.
+		page_name: The title to display at the top of the page.
+
+	Returns:
+		None.
 	"""
 
-	# Configure the title of the Streamlit page
 	st.title(page_name)
 
 
 def check_credentials() -> bool:
 	"""
-	Checks whether credentials are available in the session state.
-
-	This function verifies if the credentials are stored in the Streamlit session state.
-	If available, it shows a success message for 3 seconds, and returns True.
-	If not available, it shows a warning message and returns False.
+	Verifies whether credentials exist in the Streamlit
+	session state and displays a temporary status message
+	accordingly.
 
 	Returns:
-		bool: True if credentials are available, otherwise False.
+		Whether valid credentials are present in the
+			session state.
 	"""
 
 	@st.cache_data
 	def credentials_available() -> None:
-		# Create an empty container that can be updated
-		message_container = st.empty()
-
-		# Show a success message
-		message_container.success("Credentials available.", icon="🔐")
-
-		# Wait for 3 seconds
+		status_message = st.empty()
+		status_message.success("Credentials available.", icon="🔐")
 		time.sleep(3)
-
-		# Empty the message
-		message_container.empty()
+		status_message.empty()
 
 	if "credentials" in st.session_state and st.session_state.credentials:
 		credentials_available()
@@ -57,34 +51,47 @@ def check_credentials() -> bool:
 
 
 def obtain_top(df: pd.DataFrame, top: int, column: str) -> list:
-	"""Obtain the top 'n' rows from a DataFrame based on a specific column.
+	"""
+	Returns the most frequently occurring values in a
+	DataFrame column, ranked by descending frequency.
 
 	Args:
 		df: The DataFrame containing the data.
-		top: The number of top rows to return based on the column value.
-		column: The column name to sort the data by to determine the top rows.
+		top: The number of most frequent values to
+			return.
+		column: The column name to compute value
+			frequencies from.
 
 	Returns:
-		list: A list of the top 'n' values from the specified column in the DataFrame.
+		The most frequent values from the specified
+			column.
 	"""
 
-	return list(df[column].value_counts()[:top].index)
+	return list(df[column].value_counts().iloc[:top].index)
 
 
 def summarize_year(df: pd.DataFrame, year: int) -> tuple[pd.DataFrame, dict]:
 	"""
-	Devuelve métricas anuales y mensuales para un año dado.
+	Computes monthly and annual sales metrics for a given
+	year. The monthly DataFrame includes revenue, products
+	sold, average discount, and month names for all 12
+	months (zero-filled where no data exists). The annual
+	dictionary aggregates totals and averages.
 
 	Args:
 		df: The DataFrame containing sales data.
-		years: The selected years.
+		year: The year to summarize.
+
+	Returns:
+		A tuple of the monthly breakdown DataFrame and
+			the annual summary dictionary.
 	"""
 
-	df_year = df[df["Fecha de venta"].dt.year == year].copy()
-	df_year["Month"] = df_year["Fecha de venta"].dt.month
+	yearly_sales = df[df["Fecha de venta"].dt.year == year].copy()
+	yearly_sales["Month"] = yearly_sales["Fecha de venta"].dt.month
 
-	monthly = (
-		df_year.groupby("Month")
+	monthly_summary = (
+		yearly_sales.groupby("Month")
 		.agg(
 			Revenue=("Precio producto", "sum"),
 			Products_Sold=("Precio producto", "count"),
@@ -94,34 +101,38 @@ def summarize_year(df: pd.DataFrame, year: int) -> tuple[pd.DataFrame, dict]:
 		.reset_index()
 	)
 
-	monthly["Month_Name"] = monthly["Month"].apply(lambda m: MONTHS_NAMES[m - 1])
-	monthly["Year"] = year
+	monthly_summary["Month_Name"] = monthly_summary["Month"].apply(
+		lambda m: MONTHS_NAMES[m - 1]
+	)
+	monthly_summary["Year"] = year
 
-	annual = {
+	annual_summary = {
 		"Year": year,
-		"Total_Revenue": monthly["Revenue"].sum(),
-		"Total_Products": monthly["Products_Sold"].sum(),
-		"Avg_Price": df_year["Precio producto"].mean(),
-		"Avg_Discount": monthly["Avg_Discount"].mean(),
+		"Total_Revenue": monthly_summary["Revenue"].sum(),
+		"Total_Products": monthly_summary["Products_Sold"].sum(),
+		"Avg_Price": yearly_sales["Precio producto"].mean(),
+		"Avg_Discount": monthly_summary["Avg_Discount"].mean(),
 	}
 
-	return monthly, annual
+	return monthly_summary, annual_summary
 
 
 def plot_line(
 	df: pd.DataFrame, x: str, y: str, color: str, title: str, labels: dict | None = None
 ) -> None:
 	"""
-	Plot a line chart using Plotly Express and display it in Streamlit.
+	Renders an interactive Plotly line chart with markers
+	inside a full-width Streamlit container.
 
 	Args:
 		df: The DataFrame containing the data to plot.
 		x: Column name to use for the x-axis.
 		y: Column name to use for the y-axis.
-		color: Column name to use for grouping and coloring the lines.
+		color: Column name to use for grouping and
+			coloring the lines.
 		title: The chart title.
 		labels: A dictionary mapping column names to
-			axis/legend labels. Defaults to None.
+			axis/legend labels.
 
 	Returns:
 		None.
