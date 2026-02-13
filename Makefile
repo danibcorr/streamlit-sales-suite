@@ -12,7 +12,7 @@ PATH_PROJECT_ROOT ?= .
 
 setup:
 	@echo "Installing dependencies..."
-	@uv sync --all-extras
+	@uv sync --all-extras --all-groups
 	@uv run pre-commit install
 	@echo "✅ Dependencies installed."
 

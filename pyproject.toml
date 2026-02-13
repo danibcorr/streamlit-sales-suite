@@ -24,7 +24,6 @@ dependencies = [
 ]
 
 [tool.uv]
-default-groups = "all"
 cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true } }]
 
 [dependency-groups]
