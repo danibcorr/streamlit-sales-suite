@@ -6,14 +6,6 @@ inputs:
     description: "Python version to set up for the project"
     required: true
 
-  uv-group:
-    description: "Dependency group to install"
-    required: false
-
-  uv-extra:
-    description: "Dependency extra to install"
-    required: false
-
 runs:
   using: composite
   steps:
@@ -27,14 +19,7 @@ runs:
     - name: Install dependencies with uv
       shell: bash
       run: |
-        ARGS=""
-        if [ "${{ inputs.uv-extra }}" = "--all-extras" ] || [ -z "${{ inputs.uv-group }}${{ inputs.uv-extra }}" ]; then
-          ARGS="--all-extras"
-        else
-          [ -n "${{ inputs.uv-group }}" ] && ARGS="$ARGS --group ${{ inputs.uv-group }}"
-          [ -n "${{ inputs.uv-extra }}" ] && ARGS="$ARGS --extra ${{ inputs.uv-extra }}"
-        fi
-        uv sync $ARGS
+        uv sync --all-extras --all-groups
 
     - name: Verify uv and environment
       shell: bash

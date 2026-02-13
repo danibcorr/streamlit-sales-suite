@@ -24,8 +24,6 @@ jobs:
         uses: ./.github/actions/setup-python-env
         with:
           src-python-version: ${{ env.SRC_PYTHON_VERSION }}
-          uv-group: "--all-groups"
-          uv-extra: "--all-extras"
 
       - name: Lint Code
         uses: ./.github/actions/lint-code
@@ -60,9 +58,6 @@ jobs:
 
       - name: Setup Python Environment
         uses: ./.github/actions/setup-python-env
-        with:
-          src-python-version: ${{ env.SRC_PYTHON_VERSION }}
-          uv-group: "pipeline"
 
       - name: Get Version
         id: version
