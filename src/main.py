@@ -4,9 +4,53 @@ import json
 # 3pps
 import pandas as pd
 import streamlit as st
+from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 # Own modules
 from dataframe_schema import SalesDataFrameSchema
+from utils import generate_synthetic_data
+
+
+def credentials_case() -> UploadedFile | None:
+	"""_summary_
+
+	Returns:
+		UploadedFile | None: _description_
+	"""
+
+	if "credentials_uploaded" not in st.session_state:
+		st.session_state.credentials_uploaded = False
+
+	if not st.session_state.credentials_uploaded:
+		st.sidebar.subheader("Load credentials")
+
+		credentials_file = st.sidebar.file_uploader(
+			"Upload the JSON file with credentials", type=["json"]
+		)
+	else:
+		credentials_file = None
+
+	return credentials_file
+
+
+def synthetic_case() -> bool | None:
+	"""_summary_
+
+	Returns:
+		bool | None: _description_
+	"""
+
+	using_synthetic_data = False
+
+	if "synthetic_data" not in st.session_state:
+		st.session_state.synthetic_data = False
+
+	if not st.session_state.synthetic_data and st.sidebar.checkbox(
+		"Want to test the app with synthetic data?"
+	):
+		using_synthetic_data = True
+
+	return using_synthetic_data
 
 
 def upload_credentials() -> None:
@@ -22,17 +66,8 @@ def upload_credentials() -> None:
 		None.
 	"""
 
-	if "credentials_uploaded" not in st.session_state:
-		st.session_state.credentials_uploaded = False
-
-	if not st.session_state.credentials_uploaded:
-		st.sidebar.subheader("Load credentials")
-
-		credentials_file = st.sidebar.file_uploader(
-			"Upload the JSON file with credentials", type=["json"]
-		)
-	else:
-		credentials_file = None
+	credentials_file = credentials_case()
+	using_synthetic_data = synthetic_case()
 
 	if credentials_file is not None:
 		try:
@@ -57,8 +92,14 @@ def upload_credentials() -> None:
 
 		except ValueError as error:
 			st.sidebar.error(f"Error reading the JSON file: {error}", icon="⚠️")
+
 	elif st.session_state.credentials_uploaded:
 		st.sidebar.info("Credentials already uploaded and loaded.")
+
+	if using_synthetic_data:
+		st.session_state.dataframe = generate_synthetic_data()
+		st.session_state.credentials = "Synthetic"
+		st.session_state.credentials_uploaded = True
 
 
 def streamlit_configuration() -> None:

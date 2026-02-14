@@ -15,3 +15,14 @@ MONTHS_NAMES: Final[tuple[str, ...]] = (
 	"November",
 	"December",
 )
+
+REQUIRED_COLUMNS: Final[tuple[str, ...]] = (
+	"Plataforma de venta",
+	"Fecha de venta",
+	"Pais",
+	"Genero",
+	"Precio producto",
+	"Tipo producto",
+	"Estado del producto",
+	"Descuentos (%)",
+)

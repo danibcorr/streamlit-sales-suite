@@ -1,5 +1,7 @@
 # Standard libraries
+import random
 import time
+from datetime import datetime, timedelta
 
 # 3pps
 import pandas as pd
@@ -7,7 +9,7 @@ import plotly.express as px
 import streamlit as st
 
 # Own modules
-from config import MONTHS_NAMES
+from config import MONTHS_NAMES, REQUIRED_COLUMNS
 
 
 def config_streamlit_page(page_name: str) -> None:
@@ -140,3 +142,51 @@ def plot_line(
 
 	fig = px.line(df, x=x, y=y, color=color, markers=True, title=title, labels=labels)
 	st.plotly_chart(fig, width="stretch")
+
+
+def generate_synthetic_data(num_samples: int = 1000) -> pd.DataFrame:
+	"""_summary_
+
+	Args:
+		num_samples (int, optional): _description_. Defaults to 1000.
+
+	Returns:
+		pl.DataFrame: _description_
+	"""
+
+	plataformas = ["Amazon", "Shopify", "Etsy", "eBay", "Mercado Libre"]
+	paises = ["España", "México", "Argentina", "Colombia", "EE.UU."]
+	generos = ["M", "F"]
+	tipos = ["Electrónica", "Ropa", "Hogar", "Libros", "Deportes"]
+	estados = ["Nuevo", "Usado - Como nuevo", "Usado - Buen estado"]
+
+	data = []
+
+	for _ in range(num_samples):
+		tipo = random.choice(tipos)  # nosec
+		precio = (
+			round(random.uniform(10, 500), 2)  # nosec
+			if tipo != "Libros"
+			else round(random.uniform(5, 50), 2)  # nosec
+		)
+		fecha = (datetime.now() - timedelta(days=random.randint(0, 365))).strftime(  # nosec
+			"%Y-%m-%d"
+		)
+
+		data.append(
+			[
+				random.choice(plataformas),  # nosec
+				fecha,
+				random.choice(paises),  # nosec
+				random.choice(generos),  # nosec
+				precio,
+				tipo,
+				random.choice(estados),  # nosec
+				random.choice([0, 5, 10, 15, 20, 50]),  # nosec
+			]
+		)
+
+	df = pd.DataFrame(data, columns=REQUIRED_COLUMNS)
+	df["Fecha de venta"] = pd.to_datetime(df["Fecha de venta"])
+
+	return df

@@ -301,40 +301,44 @@ def compare_products_years(df: pd.DataFrame, years: list[int]) -> None:
 		f"{str(', '.join([str(year) for year in years]))}"
 	)
 
-	filtered_by_years = df[df["Fecha de venta"].dt.year.isin(years)]
+	if len(years) != 0:
+		filtered_by_years = df[df["Fecha de venta"].dt.year.isin(years)]
 
-	products_by_year = (
-		filtered_by_years.groupby(
-			["Tipo producto", filtered_by_years["Fecha de venta"].dt.year]
+		products_by_year = (
+			filtered_by_years.groupby(
+				["Tipo producto", filtered_by_years["Fecha de venta"].dt.year]
+			)
+			.size()
+			.reset_index(name="Cantidad")
 		)
-		.size()
-		.reset_index(name="Cantidad")
-	)
-	products_by_year.columns = ["Tipo producto", "Año", "Cantidad"]
-	products_by_year["Año"] = products_by_year["Año"].astype(str)
+		products_by_year.columns = ["Tipo producto", "Año", "Cantidad"]
+		products_by_year["Año"] = products_by_year["Año"].astype(str)
 
-	fig = px.bar(
-		products_by_year,
-		x="Tipo producto",
-		y="Cantidad",
-		color="Año",
-		title="",
-		barmode="group",
-		text_auto=True,
-		color_discrete_sequence=px.colors.qualitative.Pastel,
-	)
-	fig.update_layout(
-		xaxis_title="Product Type",
-		yaxis_title="Quantity",
-		legend_title="Year",
-		barmode="group",
-		xaxis_tickangle=-45,
-	)
-	fig.update_traces(
-		textfont_size=12, textangle=0, textposition="outside", cliponaxis=False
-	)
+		fig = px.bar(
+			products_by_year,
+			x="Tipo producto",
+			y="Cantidad",
+			color="Año",
+			title="",
+			barmode="group",
+			text_auto=True,
+			color_discrete_sequence=px.colors.qualitative.Pastel,
+		)
+		fig.update_layout(
+			xaxis_title="Product Type",
+			yaxis_title="Quantity",
+			legend_title="Year",
+			barmode="group",
+			xaxis_tickangle=-45,
+		)
+		fig.update_traces(
+			textfont_size=12, textangle=0, textposition="outside", cliponaxis=False
+		)
 
-	st.plotly_chart(fig, width="stretch")
+		st.plotly_chart(fig, width="stretch")
+
+	else:
+		st.error("No years selected", icon="⚠️")
 
 
 def compare_income_month_years(df: pd.DataFrame, years: list[int]) -> None:
@@ -355,65 +359,69 @@ def compare_income_month_years(df: pd.DataFrame, years: list[int]) -> None:
 		f"{str(', '.join([str(year) for year in years]))}"
 	)
 
-	filtered_by_years = df[df["Fecha de venta"].dt.year.isin(years)].copy()
-	filtered_by_years.loc[:, "Año"] = filtered_by_years[
-		"Fecha de venta"
-	].dt.year.astype(str)
-	filtered_by_years.loc[:, "Mes"] = filtered_by_years["Fecha de venta"].dt.month
-	filtered_by_years.loc[:, "Mes_nombre"] = filtered_by_years[
-		"Fecha de venta"
-	].dt.strftime("%B")
-	filtered_by_years.loc[:, "Año_Mes"] = filtered_by_years[
-		"Fecha de venta"
-	].dt.strftime("%Y-%m")
+	if len(years) != 0:
+		filtered_by_years = df[df["Fecha de venta"].dt.year.isin(years)].copy()
+		filtered_by_years.loc[:, "Año"] = filtered_by_years[
+			"Fecha de venta"
+		].dt.year.astype(str)
+		filtered_by_years.loc[:, "Mes"] = filtered_by_years["Fecha de venta"].dt.month
+		filtered_by_years.loc[:, "Mes_nombre"] = filtered_by_years[
+			"Fecha de venta"
+		].dt.strftime("%B")
+		filtered_by_years.loc[:, "Año_Mes"] = filtered_by_years[
+			"Fecha de venta"
+		].dt.strftime("%Y-%m")
 
-	income_by_month_year = (
-		filtered_by_years.groupby(["Año", "Mes", "Mes_nombre", "Año_Mes"])[
-			"Precio producto"
-		]
-		.sum()
-		.reset_index()
-	)
-
-	fig = px.bar(
-		income_by_month_year,
-		x="Mes_nombre",
-		y="Precio producto",
-		color="Año",
-		barmode="group",
-		text="Precio producto",
-		color_discrete_sequence=px.colors.qualitative.Pastel,
-		category_orders={
-			"Mes_nombre": [
-				"January",
-				"February",
-				"March",
-				"April",
-				"May",
-				"June",
-				"July",
-				"August",
-				"September",
-				"October",
-				"November",
-				"December",
+		income_by_month_year = (
+			filtered_by_years.groupby(["Año", "Mes", "Mes_nombre", "Año_Mes"])[
+				"Precio producto"
 			]
-		},
-	)
-	fig.update_layout(
-		xaxis_title="Month",
-		yaxis_title="Income (€)",
-		legend_title="Year",
-		xaxis_tickangle=-45,
-	)
-	fig.update_traces(
-		texttemplate="%{text:.0f}€",
-		textposition="outside",
-		textfont_size=10,
-		cliponaxis=False,
-	)
+			.sum()
+			.reset_index()
+		)
 
-	st.plotly_chart(fig, width="stretch")
+		fig = px.bar(
+			income_by_month_year,
+			x="Mes_nombre",
+			y="Precio producto",
+			color="Año",
+			barmode="group",
+			text="Precio producto",
+			color_discrete_sequence=px.colors.qualitative.Pastel,
+			category_orders={
+				"Mes_nombre": [
+					"January",
+					"February",
+					"March",
+					"April",
+					"May",
+					"June",
+					"July",
+					"August",
+					"September",
+					"October",
+					"November",
+					"December",
+				]
+			},
+		)
+		fig.update_layout(
+			xaxis_title="Month",
+			yaxis_title="Income (€)",
+			legend_title="Year",
+			xaxis_tickangle=-45,
+		)
+		fig.update_traces(
+			texttemplate="%{text:.0f}€",
+			textposition="outside",
+			textfont_size=10,
+			cliponaxis=False,
+		)
+
+		st.plotly_chart(fig, width="stretch")
+
+	else:
+		st.error("No years selected", icon="⚠️")
 
 
 def flow_money(df: pd.DataFrame, years: list[int]) -> None:
@@ -433,24 +441,28 @@ def flow_money(df: pd.DataFrame, years: list[int]) -> None:
 		f"Financial Flow Analysis: {str(', '.join([str(year) for year in years]))}"
 	)
 
-	all_monthly_summaries, all_annual_summaries = [], []
+	if len(years) != 0:
+		all_monthly_summaries, all_annual_summaries = [], []
 
-	for year in years:
-		monthly, annual = summarize_year(df, year)
-		all_monthly_summaries.append(monthly)
-		all_annual_summaries.append(annual)
+		for year in years:
+			monthly, annual = summarize_year(df, year)
+			all_monthly_summaries.append(monthly)
+			all_annual_summaries.append(annual)
 
-	annual_overview_df = pd.DataFrame(all_annual_summaries)
+		annual_overview_df = pd.DataFrame(all_annual_summaries)
 
-	revenue_col, products_col, _ = st.columns(3)
-	revenue_col.metric(
-		"Total Revenue", f"{annual_overview_df['Total_Revenue'].sum():,.2f} €"
-	)
-	products_col.metric(
-		"Total Products", f"{annual_overview_df['Total_Products'].sum():,}"
-	)
+		revenue_col, products_col, _ = st.columns(3)
+		revenue_col.metric(
+			"Total Revenue", f"{annual_overview_df['Total_Revenue'].sum():,.2f} €"
+		)
+		products_col.metric(
+			"Total Products", f"{annual_overview_df['Total_Products'].sum():,}"
+		)
 
-	st.dataframe(annual_overview_df.round(2), width="stretch")
+		st.dataframe(annual_overview_df.round(2), width="stretch")
+
+	else:
+		st.error("No years selected", icon="⚠️")
 
 
 def category_sales_by_period(df: pd.DataFrame, years: list[int]) -> None:
@@ -470,55 +482,59 @@ def category_sales_by_period(df: pd.DataFrame, years: list[int]) -> None:
 		f"Category Sales by Month in {str(', '.join([str(year) for year in years]))}"
 	)
 
-	filtered_sales = df[df["Fecha de venta"].dt.year.isin(years)].copy()
-	filtered_sales["Año"] = filtered_sales["Fecha de venta"].dt.year
-	filtered_sales["Mes"] = filtered_sales["Fecha de venta"].dt.month
+	if len(years) != 0:
+		filtered_sales = df[df["Fecha de venta"].dt.year.isin(years)].copy()
+		filtered_sales["Año"] = filtered_sales["Fecha de venta"].dt.year
+		filtered_sales["Mes"] = filtered_sales["Fecha de venta"].dt.month
 
-	all_months = sorted(filtered_sales["Mes"].unique())
-	month_names = [MONTHS_NAMES[m - 1] for m in all_months]
+		all_months = sorted(filtered_sales["Mes"].unique())
+		month_names = [MONTHS_NAMES[m - 1] for m in all_months]
 
-	selected_month_name = st.selectbox("Select a month", month_names)
-	selected_month = all_months[month_names.index(selected_month_name)]
+		selected_month_name = st.selectbox("Select a month", month_names)
+		selected_month = all_months[month_names.index(selected_month_name)]
 
-	month_data = filtered_sales[filtered_sales["Mes"] == selected_month]
+		month_data = filtered_sales[filtered_sales["Mes"] == selected_month]
 
-	summary = (
-		month_data.groupby(["Tipo producto", "Año"])
-		.agg(
-			Quantity=("Tipo producto", "count"),
-			Total_Price=("Precio producto", "sum"),
+		summary = (
+			month_data.groupby(["Tipo producto", "Año"])
+			.agg(
+				Quantity=("Tipo producto", "count"),
+				Total_Price=("Precio producto", "sum"),
+			)
+			.reset_index()
 		)
-		.reset_index()
-	)
-	summary["Año"] = summary["Año"].astype(str)
+		summary["Año"] = summary["Año"].astype(str)
 
-	col1, col2 = st.columns(2)
+		col1, col2 = st.columns(2)
 
-	with col1:
-		fig = px.bar(
-			summary,
-			x="Tipo producto",
-			y="Quantity",
-			color="Año",
-			barmode="group",
-			title="Quantity by Category",
-			color_discrete_sequence=px.colors.qualitative.Pastel,
-		)
-		fig.update_layout(xaxis_tickangle=-45)
-		st.plotly_chart(fig, width="stretch")
+		with col1:
+			fig = px.bar(
+				summary,
+				x="Tipo producto",
+				y="Quantity",
+				color="Año",
+				barmode="group",
+				title="Quantity by Category",
+				color_discrete_sequence=px.colors.qualitative.Pastel,
+			)
+			fig.update_layout(xaxis_tickangle=-45)
+			st.plotly_chart(fig, width="stretch")
 
-	with col2:
-		fig = px.bar(
-			summary,
-			x="Tipo producto",
-			y="Total_Price",
-			color="Año",
-			barmode="group",
-			title="Total Price (€) by Category",
-			color_discrete_sequence=px.colors.qualitative.Pastel,
-		)
-		fig.update_layout(xaxis_tickangle=-45)
-		st.plotly_chart(fig, width="stretch")
+		with col2:
+			fig = px.bar(
+				summary,
+				x="Tipo producto",
+				y="Total_Price",
+				color="Año",
+				barmode="group",
+				title="Total Price (€) by Category",
+				color_discrete_sequence=px.colors.qualitative.Pastel,
+			)
+			fig.update_layout(xaxis_tickangle=-45)
+			st.plotly_chart(fig, width="stretch")
+
+	else:
+		st.error("No years selected", icon="⚠️")
 
 
 def display_all_graphs(has_valid_credentials: bool) -> None:
@@ -544,7 +560,6 @@ def display_all_graphs(has_valid_credentials: bool) -> None:
 			selected_years = st.multiselect(
 				"Select all the years you want to compare",
 				available_years,
-				default=2023,
 			)
 
 			compare_products_years(df=st.session_state.dataframe, years=selected_years)
