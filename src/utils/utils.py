@@ -10,6 +10,17 @@ import streamlit as st
 
 # Own modules
 from config import MONTHS_NAMES, REQUIRED_COLUMNS
+from config.constants import (
+    COL_AVG_DISCOUNT,
+    COL_DESCUENTOS,
+    COL_FECHA_VENTA,
+    COL_MONTH,
+    COL_MONTH_NAME,
+    COL_PRECIO_PRODUCTO,
+    COL_PRODUCTS_SOLD,
+    COL_REVENUE,
+    COL_YEAR,
+)
 
 
 def config_streamlit_page(page_name: str) -> None:
@@ -52,7 +63,7 @@ def check_credentials() -> bool:
 	return False
 
 
-def obtain_top(df: pd.DataFrame, top: int, column: str) -> list:
+def obtain_top(df: pd.DataFrame, top: int, column: str) -> list[str]:
 	"""
 	Returns the most frequently occurring values in a
 	DataFrame column, ranked by descending frequency.
@@ -89,31 +100,31 @@ def summarize_year(df: pd.DataFrame, year: int) -> tuple[pd.DataFrame, dict]:
 			the annual summary dictionary.
 	"""
 
-	yearly_sales = df[df["Fecha de venta"].dt.year == year].copy()
-	yearly_sales["Month"] = yearly_sales["Fecha de venta"].dt.month
+	yearly_sales = df[df[COL_FECHA_VENTA].dt.year == year].copy()
+	yearly_sales[COL_MONTH] = yearly_sales[COL_FECHA_VENTA].dt.month
 
 	monthly_summary = (
-		yearly_sales.groupby("Month")
+		yearly_sales.groupby(COL_MONTH)
 		.agg(
-			Revenue=("Precio producto", "sum"),
-			Products_Sold=("Precio producto", "count"),
-			Avg_Discount=("Descuentos (%)", "mean"),
+			Revenue=(COL_PRECIO_PRODUCTO, "sum"),
+			Products_Sold=(COL_PRECIO_PRODUCTO, "count"),
+			Avg_Discount=(COL_DESCUENTOS, "mean"),
 		)
 		.reindex(range(1, 13), fill_value=0)
 		.reset_index()
 	)
 
-	monthly_summary["Month_Name"] = monthly_summary["Month"].apply(
+	monthly_summary[COL_MONTH_NAME] = monthly_summary[COL_MONTH].apply(
 		lambda m: MONTHS_NAMES[m - 1]
 	)
-	monthly_summary["Year"] = year
+	monthly_summary[COL_YEAR] = year
 
 	annual_summary = {
-		"Year": year,
-		"Total_Revenue": monthly_summary["Revenue"].sum(),
-		"Total_Products": monthly_summary["Products_Sold"].sum(),
-		"Avg_Price": yearly_sales["Precio producto"].mean(),
-		"Avg_Discount": monthly_summary["Avg_Discount"].mean(),
+		COL_YEAR: year,
+		"Total_Revenue": monthly_summary[COL_REVENUE].sum(),
+		"Total_Products": monthly_summary[COL_PRODUCTS_SOLD].sum(),
+		"Avg_Price": yearly_sales[COL_PRECIO_PRODUCTO].mean(),
+		COL_AVG_DISCOUNT: monthly_summary[COL_AVG_DISCOUNT].mean(),
 	}
 
 	return monthly_summary, annual_summary
@@ -187,6 +198,6 @@ def generate_synthetic_data(num_samples: int = 1000) -> pd.DataFrame:
 		)
 
 	df = pd.DataFrame(data, columns=REQUIRED_COLUMNS)
-	df["Fecha de venta"] = pd.to_datetime(df["Fecha de venta"])
+	df[COL_FECHA_VENTA] = pd.to_datetime(df[COL_FECHA_VENTA])
 
 	return df

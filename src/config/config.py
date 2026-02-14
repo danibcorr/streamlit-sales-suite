@@ -1,6 +1,18 @@
 # Standard libraries
 from typing import Final
 
+# Own modules
+from config.constants import (
+    COL_DESCUENTOS,
+    COL_ESTADO_PRODUCTO,
+    COL_FECHA_VENTA,
+    COL_GENERO,
+    COL_PAIS,
+    COL_PLATAFORMA,
+    COL_PRECIO_PRODUCTO,
+    COL_TIPO_PRODUCTO,
+)
+
 MONTHS_NAMES: Final[tuple[str, ...]] = (
 	"January",
 	"February",
@@ -17,12 +29,12 @@ MONTHS_NAMES: Final[tuple[str, ...]] = (
 )
 
 REQUIRED_COLUMNS: Final[tuple[str, ...]] = (
-	"Plataforma de venta",
-	"Fecha de venta",
-	"Pais",
-	"Genero",
-	"Precio producto",
-	"Tipo producto",
-	"Estado del producto",
-	"Descuentos (%)",
+	COL_PLATAFORMA,
+	COL_FECHA_VENTA,
+	COL_PAIS,
+	COL_GENERO,
+	COL_PRECIO_PRODUCTO,
+	COL_TIPO_PRODUCTO,
+	COL_ESTADO_PRODUCTO,
+	COL_DESCUENTOS,
 )

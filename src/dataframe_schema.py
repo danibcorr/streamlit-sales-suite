@@ -6,6 +6,7 @@ import pandas as pd
 
 # Own modules
 from config import REQUIRED_COLUMNS
+from config.constants import COL_FECHA_VENTA
 
 
 @dataclass(frozen=True)
@@ -17,7 +18,8 @@ class SalesDataFrameSchema:
 	@classmethod
 	def validate(cls, df: pd.DataFrame) -> tuple[bool, str]:
 		"""
-		Validates that the DataFrame contains all required columns.
+		Validates that the DataFrame contains all required columns
+		and correct data types.
 
 		Args:
 			df: The DataFrame to validate.
@@ -31,5 +33,8 @@ class SalesDataFrameSchema:
 
 		if missing_columns:
 			return False, f"Missing columns: {', '.join(sorted(missing_columns))}"
+
+		if not pd.api.types.is_datetime64_any_dtype(df[COL_FECHA_VENTA]):
+			return False, f"'{COL_FECHA_VENTA}' must be datetime type"
 
 		return True, ""

@@ -4,53 +4,83 @@ import json
 # 3pps
 import pandas as pd
 import streamlit as st
-from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 # Own modules
 from dataframe_schema import SalesDataFrameSchema
 from utils import generate_synthetic_data
 
 
-def credentials_case() -> UploadedFile | None:
-	"""_summary_
+def _load_synthetic_data() -> None:
+	"""
+	Generates and loads synthetic sales data into session
+	state, marking credentials as uploaded.
 
 	Returns:
-		UploadedFile | None: _description_
+		None.
 	"""
 
-	if "credentials_uploaded" not in st.session_state:
-		st.session_state.credentials_uploaded = False
+	st.session_state.dataframe = generate_synthetic_data()
+	st.session_state.credentials = "Synthetic"
+	st.session_state.credentials_uploaded = True
+	st.sidebar.success("Synthetic data loaded successfully", icon="✅")
 
-	if not st.session_state.credentials_uploaded:
-		st.sidebar.subheader("Load credentials")
 
-		credentials_file = st.sidebar.file_uploader(
-			"Upload the JSON file with credentials", type=["json"]
-		)
+def _load_excel_file(path: str) -> None:
+	"""
+	Loads and validates an Excel file from the specified path.
+	Updates session state with the DataFrame if valid, otherwise
+	displays an error message.
+
+	Args:
+		path: Path to the Excel file.
+
+	Returns:
+		None.
+	"""
+
+	df = pd.read_excel(path)
+	is_valid, error_msg = SalesDataFrameSchema.validate(df)
+
+	if is_valid:
+		st.session_state.dataframe = df
+		st.sidebar.success("File successfully loaded", icon="✅")
 	else:
-		credentials_file = None
-
-	return credentials_file
+		st.sidebar.error(f"Invalid DataFrame: {error_msg}", icon="⚠️")
 
 
-def synthetic_case() -> bool | None:
-	"""_summary_
+def _process_credentials_file(credentials_file) -> None:
+	"""
+	Parses and processes a JSON credentials file. Updates
+	session state with credentials and loads the Excel file
+	specified in the credentials. Displays appropriate error
+	messages for invalid input.
+
+	Args:
+		credentials_file: Uploaded JSON file object.
 
 	Returns:
-		bool | None: _description_
+		None.
 	"""
 
-	using_synthetic_data = False
+	try:
+		parsed_credentials = json.load(credentials_file)
 
-	if "synthetic_data" not in st.session_state:
-		st.session_state.synthetic_data = False
+		st.session_state.credentials = parsed_credentials
+		st.session_state.credentials_uploaded = True
 
-	if not st.session_state.synthetic_data and st.sidebar.checkbox(
-		"Want to test the app with synthetic data?"
-	):
-		using_synthetic_data = True
+		st.sidebar.success("Credentials successfully uploaded", icon="✅")
 
-	return using_synthetic_data
+		if "path" in parsed_credentials:
+			_load_excel_file(parsed_credentials["path"])
+		else:
+			st.sidebar.error("Invalid credentials: Missing path key.", icon="⚠️")
+
+	except json.JSONDecodeError as error:
+		st.sidebar.error(f"Invalid JSON format: {error}", icon="⚠️")
+	except KeyError as error:
+		st.sidebar.error(f"Missing required key: {error}", icon="⚠️")
+	except Exception as error:
+		st.sidebar.error(f"Unexpected error: {error}", icon="⚠️")
 
 
 def upload_credentials() -> None:
@@ -66,40 +96,25 @@ def upload_credentials() -> None:
 		None.
 	"""
 
-	credentials_file = credentials_case()
-	using_synthetic_data = synthetic_case()
+	if "credentials_uploaded" not in st.session_state:
+		st.session_state.credentials_uploaded = False
+
+	if st.session_state.credentials_uploaded:
+		st.sidebar.info("Credentials already uploaded and loaded.")
+		return
+
+	st.sidebar.subheader("Load credentials")
+
+	if st.sidebar.checkbox("Want to test the app with synthetic data?"):
+		_load_synthetic_data()
+		return
+
+	credentials_file = st.sidebar.file_uploader(
+		"Upload the JSON file with credentials", type=["json"]
+	)
 
 	if credentials_file is not None:
-		try:
-			parsed_credentials = json.load(credentials_file)
-
-			st.session_state.credentials = parsed_credentials
-			st.session_state.credentials_uploaded = True
-
-			st.sidebar.success("Credentials successfully uploaded", icon="✅")
-
-			if "path" in parsed_credentials:
-				df = pd.read_excel(parsed_credentials["path"])
-				is_valid, error_msg = SalesDataFrameSchema.validate(df)
-
-				if is_valid:
-					st.session_state.dataframe = df
-					st.sidebar.success("File successfully loaded", icon="✅")
-				else:
-					st.sidebar.error(f"Invalid DataFrame: {error_msg}", icon="⚠️")
-			else:
-				st.sidebar.error("Invalid credentials: Missing path key.", icon="⚠️")
-
-		except ValueError as error:
-			st.sidebar.error(f"Error reading the JSON file: {error}", icon="⚠️")
-
-	elif st.session_state.credentials_uploaded:
-		st.sidebar.info("Credentials already uploaded and loaded.")
-
-	if using_synthetic_data:
-		st.session_state.dataframe = generate_synthetic_data()
-		st.session_state.credentials = "Synthetic"
-		st.session_state.credentials_uploaded = True
+		_process_credentials_file(credentials_file)
 
 
 def streamlit_configuration() -> None:
