@@ -16,11 +16,11 @@ classifiers = [
 ]
 dependencies = [
     "matplotlib==3.10.8",
-    "numpy==2.4.2",
+    "numpy==2.4.3",
     "openpyxl==3.1.5",
     "pandas==2.3.3",
-    "plotly==6.5.2",
-    "streamlit==1.54.0",
+    "plotly==6.6.0",
+    "streamlit==1.55.0",
 ]
 
 [tool.uv]
@@ -28,12 +28,12 @@ cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true } }]
 
 [dependency-groups]
 pipeline = [
-    "bandit==1.9.3",
+    "bandit==1.9.4",
     "complexipy==5.2.0",
     "mypy==1.19.1",
     "pytest==9.0.2",
-    "ruff==0.15.1",
-    "isort==7.0.0",
+    "ruff==0.15.5",
+    "isort==8.0.1",
     "pre-commit==4.5.1",
 ]
 
