@@ -21,6 +21,8 @@ dependencies = [
     "pandas==2.3.3",
     "plotly==6.7.0",
     "streamlit==1.57.0",
+    "plotly==6.7.0",
+    "streamlit==1.57.0",
 ]
 
 [tool.uv]
@@ -31,7 +33,7 @@ pipeline = [
     "bandit==1.9.4",
     "complexipy==5.4.0",
     "mypy==1.20.2",
-    "pytest==9.0.2",
+    "pytest==9.0.3",
     "ruff==0.15.8",
     "isort==8.0.1",
     "pre-commit==4.6.0",
