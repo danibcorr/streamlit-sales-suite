@@ -5,7 +5,6 @@ from typing import Final
 SESSION_CREDENTIALS: Final[str] = "credentials"
 SESSION_DATAFRAME: Final[str] = "dataframe"
 SESSION_CREDENTIALS_UPLOADED: Final[str] = "credentials_uploaded"
-SESSION_SYNTHETIC_DATA: Final[str] = "synthetic_data"
 
 # Column names - Original data
 COL_FECHA_VENTA: Final[str] = "Fecha de venta"

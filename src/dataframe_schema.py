@@ -1,6 +1,3 @@
-# Standard libraries
-from dataclasses import dataclass
-
 # 3pps
 import pandas as pd
 
@@ -9,7 +6,6 @@ from config import REQUIRED_COLUMNS
 from config.constants import COL_FECHA_VENTA
 
 
-@dataclass(frozen=True)
 class SalesDataFrameSchema:
 	"""
 	Schema for validating sales DataFrame columns.

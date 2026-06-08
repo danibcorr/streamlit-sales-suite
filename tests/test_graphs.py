@@ -7,15 +7,15 @@ import pytest
 
 # Own modules
 from resources.graphs import (
-    category_sales_by_period,
-    compare_income_month_years,
-    compare_products_years,
-    flow_money,
-    gender_country,
-    gender_status,
-    money_month,
-    product_month,
-    status_country,
+	category_sales_by_period,
+	compare_income_month_years,
+	compare_products_years,
+	flow_money,
+	gender_country,
+	gender_status,
+	money_month,
+	product_month,
+	status_country,
 )
 
 

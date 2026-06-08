@@ -1,25 +1,24 @@
 # Standard libraries
 import random
-import time
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 # 3pps
 import pandas as pd
-import plotly.express as px
 import streamlit as st
 
 # Own modules
 from config import MONTHS_NAMES, REQUIRED_COLUMNS
 from config.constants import (
-    COL_AVG_DISCOUNT,
-    COL_DESCUENTOS,
-    COL_FECHA_VENTA,
-    COL_MONTH,
-    COL_MONTH_NAME,
-    COL_PRECIO_PRODUCTO,
-    COL_PRODUCTS_SOLD,
-    COL_REVENUE,
-    COL_YEAR,
+	COL_AVG_DISCOUNT,
+	COL_DESCUENTOS,
+	COL_FECHA_VENTA,
+	COL_MONTH,
+	COL_MONTH_NAME,
+	COL_PRECIO_PRODUCTO,
+	COL_PRODUCTS_SOLD,
+	COL_REVENUE,
+	COL_YEAR,
+	SESSION_CREDENTIALS,
 )
 
 
@@ -48,15 +47,13 @@ def check_credentials() -> bool:
 			session state.
 	"""
 
-	@st.cache_data
-	def credentials_available() -> None:
-		status_message = st.empty()
-		status_message.success("Credentials available.", icon="🔐")
-		time.sleep(3)
-		status_message.empty()
-
-	if "credentials" in st.session_state and st.session_state.credentials:
-		credentials_available()
+	if (
+		SESSION_CREDENTIALS in st.session_state
+		and st.session_state[SESSION_CREDENTIALS]
+	):
+		if not st.session_state.get("_credentials_shown"):
+			st.toast("Credentials available.", icon="🔐")
+			st.session_state._credentials_shown = True
 		return True
 
 	st.warning("Credentials not available.", icon="⚠️")
@@ -130,39 +127,15 @@ def summarize_year(df: pd.DataFrame, year: int) -> tuple[pd.DataFrame, dict]:
 	return monthly_summary, annual_summary
 
 
-def plot_line(
-	df: pd.DataFrame, x: str, y: str, color: str, title: str, labels: dict | None = None
-) -> None:
-	"""
-	Renders an interactive Plotly line chart with markers
-	inside a full-width Streamlit container.
-
-	Args:
-		df: The DataFrame containing the data to plot.
-		x: Column name to use for the x-axis.
-		y: Column name to use for the y-axis.
-		color: Column name to use for grouping and
-			coloring the lines.
-		title: The chart title.
-		labels: A dictionary mapping column names to
-			axis/legend labels.
-
-	Returns:
-		None.
-	"""
-
-	fig = px.line(df, x=x, y=y, color=color, markers=True, title=title, labels=labels)
-	st.plotly_chart(fig, width="stretch")
-
-
 def generate_synthetic_data(num_samples: int = 1000) -> pd.DataFrame:
-	"""_summary_
+	"""
+	Generate synthetic sales data for testing.
 
 	Args:
-		num_samples (int, optional): _description_. Defaults to 1000.
+		num_samples: Number of rows to generate.
 
 	Returns:
-		pl.DataFrame: _description_
+		DataFrame with columns matching REQUIRED_COLUMNS schema.
 	"""
 
 	plataformas = ["Amazon", "Shopify", "Etsy", "eBay", "Mercado Libre"]
@@ -180,7 +153,9 @@ def generate_synthetic_data(num_samples: int = 1000) -> pd.DataFrame:
 			if tipo != "Libros"
 			else round(random.uniform(5, 50), 2)  # nosec
 		)
-		fecha = (datetime.now() - timedelta(days=random.randint(0, 365))).strftime(  # nosec
+		fecha = (
+			datetime.now(tz=UTC) - timedelta(days=random.randint(0, 365))  # nosec
+		).strftime(  # nosec
 			"%Y-%m-%d"
 		)
 

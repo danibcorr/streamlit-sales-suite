@@ -1,6 +1,6 @@
 [project]
 name = "streamlit-sales-suite"
-version = "0.1.8"
+version = "0.1.9"
 description = "Streamlit Sales Suite"
 authors = [
     {name = "Daniel Bazo Correa", email = "none@none.com"},
@@ -15,12 +15,8 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
 ]
 dependencies = [
-    "matplotlib==3.10.9",
-    "numpy==2.4.6",
     "openpyxl==3.1.5",
     "pandas==3.0.3",
-    "plotly==6.7.0",
-    "streamlit==1.57.0",
     "plotly==6.7.0",
     "streamlit==1.57.0",
 ]
@@ -35,7 +31,6 @@ pipeline = [
     "mypy==1.20.2",
     "pytest==9.0.3",
     "ruff==0.15.15",
-    "isort==8.0.1",
     "pre-commit==4.6.0",
 ]
 
@@ -58,9 +53,19 @@ line-ending = "auto"
 docstring-code-format = true
 
 [tool.ruff.lint.isort]
-case-sensitive = true
+known-first-party = ["src"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
 combine-as-imports = true
-force-to-top = ["src"]
+split-on-trailing-comma = true
+
+[tool.ruff.lint.isort.import-heading]
+standard-library = "Standard libraries"
+third-party = "3pps"
+first-party = "Own modules"
+local-folder = "Own modules"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
 
 [tool.mypy]
 check_untyped_defs = true
@@ -70,16 +75,3 @@ exclude = [
     ".venv/"
 ]
 cache_dir = "/dev/null"
-
-[tool.isort]
-profile = "black"
-known_first_party = ["src"]
-sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
-import_heading_stdlib = "Standard libraries"
-import_heading_thirdparty = "3pps"
-import_heading_firstparty = "Own modules"
-import_heading_localfolder = "Own modules"
-line_length = 88
-include_trailing_comma = true
-combine_as_imports = true
-skip_glob = [".venv/*"]
