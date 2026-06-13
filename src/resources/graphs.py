@@ -1,7 +1,7 @@
 # 3pps
-import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import polars as pl
 import streamlit as st
 
 # Own modules
@@ -11,24 +11,32 @@ from config.constants import (
     COL_ESTADO_PRODUCTO,
     COL_FECHA_VENTA,
     COL_GENERO,
-    COL_MONEY,
+    COL_INCOME,
     COL_MONTH,
-    COL_MONTH_ES,
-    COL_MONTH_NAME_ES,
+    COL_MONTH_NAME,
+    COL_MONTH_NUM,
     COL_PAIS,
     COL_PRECIO_PRODUCTO,
     COL_QUANTITY,
-    COL_QUANTITY_ES,
     COL_TIPO_PRODUCTO,
     COL_TOTAL_PRICE,
+    COL_TOTAL_PRODUCTS,
+    COL_TOTAL_REVENUE,
     COL_YEAR,
-    COL_YEAR_ES,
     COL_YEAR_MONTH,
+    COL_YEAR_STR,
+    SESSION_DATAFRAME,
 )
-from utils import check_credentials, config_streamlit_page, obtain_top, summarize_year
+from utils import (
+    check_credentials,
+    config_streamlit_page,
+    filter_by_year,
+    obtain_top,
+    summarize_year,
+)
 
 
-def money_month(df: pd.DataFrame, year: int) -> None:
+def money_month(df: pl.DataFrame, year: int) -> None:
 	"""
 	Renders a bar chart showing total income per month for
 	a given year, with all 12 months displayed and
@@ -44,25 +52,38 @@ def money_month(df: pd.DataFrame, year: int) -> None:
 
 	st.subheader(f"Money Earned per Month in {year}")
 
-	yearly_sales = df[df[COL_FECHA_VENTA].dt.year == year].copy()
-	yearly_sales[COL_MONTH_ES] = yearly_sales[COL_FECHA_VENTA].dt.month
-
-	income_by_month = yearly_sales.groupby(COL_MONTH_ES)[COL_PRECIO_PRODUCTO].sum()
-	income_by_month = income_by_month.reindex(range(1, 13), fill_value=0)
-
-	monthly_income_df = pd.DataFrame(
-		{COL_MONTH_ES: MONTHS_NAMES, COL_MONEY: income_by_month.values}
+	yearly_sales = filter_by_year(df, year).with_columns(
+		pl.col(COL_FECHA_VENTA).dt.month().alias(COL_MONTH_NUM)
 	)
-	monthly_income_df[COL_MONTH_ES] = pd.Categorical(
-		monthly_income_df[COL_MONTH_ES], categories=MONTHS_NAMES, ordered=True
+
+	income_by_month = yearly_sales.group_by(COL_MONTH_NUM).agg(
+		pl.col(COL_PRECIO_PRODUCTO).sum().alias(COL_INCOME)
 	)
+
+	all_months = pl.DataFrame({COL_MONTH_NUM: list(range(1, 13))}).cast(
+		{COL_MONTH_NUM: income_by_month.schema[COL_MONTH_NUM]}
+	)
+
+	monthly_income_df = (
+		all_months.join(income_by_month, on=COL_MONTH_NUM, how="left")
+		.fill_null(0)
+		.sort(COL_MONTH_NUM)
+		.with_columns(
+			pl.col(COL_MONTH_NUM)
+			.map_elements(lambda m: MONTHS_NAMES[m - 1], return_dtype=pl.Utf8)
+			.alias(COL_MONTH_NAME)
+		)
+	)
+
+	plot_df = monthly_income_df.to_pandas()
+	plot_df[COL_MONTH_NAME] = pl.Series(MONTHS_NAMES).to_pandas().astype("category")
 
 	fig = px.bar(
-		monthly_income_df,
-		x=COL_MONTH_ES,
-		y=COL_MONEY,
-		labels={COL_MONEY: "Income (€)", COL_MONTH_ES: COL_MONTH},
-		color=COL_MONTH_ES,
+		plot_df,
+		x=COL_MONTH_NAME,
+		y=COL_INCOME,
+		labels={COL_INCOME: "Income (€)", COL_MONTH_NAME: COL_MONTH},
+		color=COL_MONTH_NAME,
 		color_discrete_sequence=px.colors.qualitative.Pastel,
 	)
 	fig.update_layout(
@@ -77,7 +98,7 @@ def money_month(df: pd.DataFrame, year: int) -> None:
 	st.plotly_chart(fig, width="stretch")
 
 
-def product_month(df: pd.DataFrame, year: int) -> None:
+def product_month(df: pl.DataFrame, year: int) -> None:
 	"""
 	Renders a stacked horizontal bar chart of products sold
 	per month by type, alongside KPI metrics including the
@@ -96,35 +117,44 @@ def product_month(df: pd.DataFrame, year: int) -> None:
 
 	chart_col, metrics_col = st.columns(2, gap="large")
 
-	yearly_sales = df[df[COL_FECHA_VENTA].dt.year == year].copy()
-	products_by_month = yearly_sales.copy()
-	products_by_month[COL_MONTH_ES] = yearly_sales[COL_FECHA_VENTA].dt.month
+	yearly_sales = filter_by_year(df, year)
+
 	products_by_month = (
-		products_by_month.groupby([COL_MONTH_ES, COL_TIPO_PRODUCTO])
-		.size()
-		.reset_index(name=COL_COUNT)
+		yearly_sales.with_columns(
+			pl.col(COL_FECHA_VENTA).dt.month().alias(COL_MONTH_NUM)
+		)
+		.group_by([COL_MONTH_NUM, COL_TIPO_PRODUCTO])
+		.len()
+		.rename({"len": COL_COUNT})
+		.with_columns(
+			pl.col(COL_MONTH_NUM)
+			.map_elements(lambda m: MONTHS_NAMES[m - 1], return_dtype=pl.Utf8)
+			.alias(COL_MONTH_NAME)
+		)
 	)
 
-	products_by_month[COL_MONTH_ES] = products_by_month[COL_MONTH_ES].apply(
-		lambda x: MONTHS_NAMES[x - 1]
-	)
-	products_by_month[COL_MONTH_ES] = pd.Categorical(
-		products_by_month[COL_MONTH_ES], categories=MONTHS_NAMES, ordered=True
-	)
+	pivoted = products_by_month.pivot(
+		on=COL_TIPO_PRODUCTO,
+		index=COL_MONTH_NAME,
+		values=COL_COUNT,
+	).fill_null(0)
 
-	pivoted_products = products_by_month.pivot(
-		index=COL_MONTH_ES, columns=COL_TIPO_PRODUCTO, values=COL_COUNT
-	).fillna(0)
-	pivoted_products = pivoted_products.loc[(pivoted_products > 0).any(axis=1)]
+	# Sort by month order
+	month_order = {name: i for i, name in enumerate(MONTHS_NAMES)}
+	pivoted_pd = pivoted.to_pandas().set_index(COL_MONTH_NAME)
+	pivoted_pd = pivoted_pd.sort_index(
+		key=lambda idx: idx.map(lambda x: month_order.get(x, 99))
+	)
+	pivoted_pd = pivoted_pd.loc[(pivoted_pd > 0).any(axis=1)]
 
 	with chart_col:
 		fig = go.Figure()
 
-		for product_type in pivoted_products.columns:
+		for product_type in pivoted_pd.columns:
 			fig.add_trace(
 				go.Bar(
-					y=pivoted_products.index,
-					x=pivoted_products[product_type],
+					y=pivoted_pd.index,
+					x=pivoted_pd[product_type],
 					name=product_type,
 					orientation="h",
 				)
@@ -136,7 +166,11 @@ def product_month(df: pd.DataFrame, year: int) -> None:
 			barmode="stack",
 			height=400,
 			legend=dict(
-				orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
+				orientation="h",
+				yanchor="bottom",
+				y=1.02,
+				xanchor="right",
+				x=1,
 			),
 		)
 
@@ -145,23 +179,25 @@ def product_month(df: pd.DataFrame, year: int) -> None:
 	with metrics_col:
 		top_3_products = obtain_top(df=yearly_sales, top=3, column=COL_TIPO_PRODUCTO)
 		st.metric(
-			label="Top 3 Products", value=str(", ".join(top_3_products)), border=True
+			label="Top 3 Products",
+			value=", ".join(top_3_products),
+			border=True,
 		)
 
 		total_col, revenue_col = st.columns(2)
 		total_col.metric(
 			label="Total Products Sold",
-			value=int(yearly_sales[COL_TIPO_PRODUCTO].value_counts().sum()),
+			value=yearly_sales.height,
 			border=True,
 		)
 		revenue_col.metric(
 			label="Total Cash Obtained",
-			value=str(float(yearly_sales[COL_PRECIO_PRODUCTO].sum().round(4))) + " €",
+			value=f"{yearly_sales.get_column(COL_PRECIO_PRODUCTO).sum():.4f} €",
 			border=True,
 		)
 
 
-def gender_status(df: pd.DataFrame, year: int) -> None:
+def gender_status(df: pl.DataFrame, year: int) -> None:
 	"""
 	Renders a heatmap showing the relationship between
 	buyer gender and product status for a given year.
@@ -176,31 +212,38 @@ def gender_status(df: pd.DataFrame, year: int) -> None:
 
 	st.subheader(f"Gender Status Heatmap in {year}")
 
-	yearly_sales = df[df[COL_FECHA_VENTA].dt.year == year].copy()
+	yearly_sales = filter_by_year(df, year)
 
-	gender_status_pivot = yearly_sales.pivot_table(
-		index=COL_ESTADO_PRODUCTO,
-		columns=COL_GENERO,
-		values=COL_FECHA_VENTA,
-		aggfunc=COL_COUNT,
-		fill_value=0,
+	pivot_pd = (
+		yearly_sales.with_columns(
+			pl.col(COL_GENERO).fill_null("Unknown"),
+			pl.col(COL_ESTADO_PRODUCTO).fill_null("Unknown"),
+		)
+		.group_by([COL_ESTADO_PRODUCTO, COL_GENERO])
+		.len()
+		.pivot(on=COL_GENERO, index=COL_ESTADO_PRODUCTO, values="len")
+		.fill_null(0)
+		.to_pandas()
+		.set_index(COL_ESTADO_PRODUCTO)
 	)
 
 	fig = px.imshow(
-		gender_status_pivot,
+		pivot_pd,
 		text_auto=True,
 		color_continuous_scale="mint",
 		labels={"color": "Count"},
 		aspect="auto",
 	)
 	fig.update_layout(
-		xaxis_title="Gender", yaxis_title="Product Status", coloraxis_showscale=False
+		xaxis_title="Gender",
+		yaxis_title="Product Status",
+		coloraxis_showscale=False,
 	)
 
 	st.plotly_chart(fig, width="stretch")
 
 
-def status_country(df: pd.DataFrame, year: int) -> None:
+def status_country(df: pl.DataFrame, year: int) -> None:
 	"""
 	Renders a heatmap showing the distribution of product
 	statuses across countries for a given year.
@@ -215,18 +258,19 @@ def status_country(df: pd.DataFrame, year: int) -> None:
 
 	st.subheader(f"Product Status by Country Heatmap in {year}")
 
-	yearly_sales = df[df[COL_FECHA_VENTA].dt.year == year].copy()
+	yearly_sales = filter_by_year(df, year)
 
-	status_country_pivot = yearly_sales.pivot_table(
-		index=COL_PAIS,
-		columns=COL_ESTADO_PRODUCTO,
-		values=COL_FECHA_VENTA,
-		aggfunc=COL_COUNT,
-		fill_value=0,
+	pivot_pd = (
+		yearly_sales.group_by([COL_PAIS, COL_ESTADO_PRODUCTO])
+		.len()
+		.pivot(on=COL_ESTADO_PRODUCTO, index=COL_PAIS, values="len")
+		.fill_null(0)
+		.to_pandas()
+		.set_index(COL_PAIS)
 	)
 
 	fig = px.imshow(
-		status_country_pivot,
+		pivot_pd,
 		text_auto=True,
 		color_continuous_scale="mint",
 		labels={"color": "Count"},
@@ -241,7 +285,7 @@ def status_country(df: pd.DataFrame, year: int) -> None:
 	st.plotly_chart(fig, width="stretch")
 
 
-def gender_country(df: pd.DataFrame, year: int) -> None:
+def gender_country(df: pl.DataFrame, year: int) -> None:
 	"""
 	Renders side-by-side heatmaps showing the distribution
 	of sales by country, split by gender, for a given year.
@@ -256,20 +300,19 @@ def gender_country(df: pd.DataFrame, year: int) -> None:
 
 	st.subheader(f"Gender Distribution by Country in {year}")
 
-	yearly_sales = df[df[COL_FECHA_VENTA].dt.year == year].copy()
+	yearly_sales = filter_by_year(df, year)
 
-	gender_country_pivot = yearly_sales.pivot_table(
-		index=COL_PAIS,
-		columns=COL_GENERO,
-		values=COL_FECHA_VENTA,
-		aggfunc=COL_COUNT,
-		fill_value=0,
+	pivot_pd = (
+		yearly_sales.group_by([COL_PAIS, COL_GENERO])
+		.len()
+		.pivot(on=COL_GENERO, index=COL_PAIS, values="len")
+		.fill_null(0)
+		.to_pandas()
+		.set_index(COL_PAIS)
 	)
 
-	female_by_country = (
-		gender_country_pivot["F"].sort_values(ascending=False).to_frame()
-	)
-	male_by_country = gender_country_pivot["M"].sort_values(ascending=False).to_frame()
+	female_by_country = pivot_pd[["F"]].sort_values("F", ascending=False)
+	male_by_country = pivot_pd[["M"]].sort_values("M", ascending=False)
 
 	female_col, male_col = st.columns(2)
 	with female_col:
@@ -302,7 +345,7 @@ def gender_country(df: pd.DataFrame, year: int) -> None:
 		st.plotly_chart(fig, width="stretch")
 
 
-def compare_products_years(df: pd.DataFrame, years: list[int]) -> None:
+def compare_products_years(df: pl.DataFrame, years: list[int]) -> None:
 	"""
 	Renders a grouped bar chart comparing the quantity of
 	products sold by type across multiple years.
@@ -317,50 +360,52 @@ def compare_products_years(df: pd.DataFrame, years: list[int]) -> None:
 
 	st.subheader(
 		"Comparison of Products Sold by Type and Year in "
-		f"{str(', '.join([str(year) for year in years]))}"
+		f"{', '.join([str(y) for y in years])}"
 	)
 
-	if len(years) != 0:
-		filtered_by_years = df[df[COL_FECHA_VENTA].dt.year.isin(years)]
-
-		products_by_year = (
-			filtered_by_years.groupby(
-				[COL_TIPO_PRODUCTO, filtered_by_years[COL_FECHA_VENTA].dt.year]
-			)
-			.size()
-			.reset_index(name=COL_QUANTITY_ES)
-		)
-		products_by_year.columns = [COL_TIPO_PRODUCTO, COL_YEAR_ES, COL_QUANTITY_ES]
-		products_by_year[COL_YEAR_ES] = products_by_year[COL_YEAR_ES].astype(str)
-
-		fig = px.bar(
-			products_by_year,
-			x=COL_TIPO_PRODUCTO,
-			y=COL_QUANTITY_ES,
-			color=COL_YEAR_ES,
-			title="",
-			barmode="group",
-			text_auto=True,
-			color_discrete_sequence=px.colors.qualitative.Pastel,
-		)
-		fig.update_layout(
-			xaxis_title="Product Type",
-			yaxis_title=COL_QUANTITY,
-			legend_title=COL_YEAR,
-			barmode="group",
-			xaxis_tickangle=-45,
-		)
-		fig.update_traces(
-			textfont_size=12, textangle=0, textposition="outside", cliponaxis=False
-		)
-
-		st.plotly_chart(fig, width="stretch")
-
-	else:
+	if not years:
 		st.error("No years selected", icon="⚠️")
+		return
+
+	filtered = df.filter(pl.col(COL_FECHA_VENTA).dt.year().is_in(years))
+
+	products_by_year = (
+		filtered.with_columns(
+			pl.col(COL_FECHA_VENTA).dt.year().cast(pl.Utf8).alias(COL_YEAR_STR)
+		)
+		.group_by([COL_TIPO_PRODUCTO, COL_YEAR_STR])
+		.len()
+		.rename({"len": COL_QUANTITY})
+	)
+
+	fig = px.bar(
+		products_by_year.to_pandas(),
+		x=COL_TIPO_PRODUCTO,
+		y=COL_QUANTITY,
+		color=COL_YEAR_STR,
+		title="",
+		barmode="group",
+		text_auto=True,
+		color_discrete_sequence=px.colors.qualitative.Pastel,
+	)
+	fig.update_layout(
+		xaxis_title="Product Type",
+		yaxis_title=COL_QUANTITY,
+		legend_title=COL_YEAR,
+		barmode="group",
+		xaxis_tickangle=-45,
+	)
+	fig.update_traces(
+		textfont_size=12,
+		textangle=0,
+		textposition="outside",
+		cliponaxis=False,
+	)
+
+	st.plotly_chart(fig, width="stretch")
 
 
-def compare_income_month_years(df: pd.DataFrame, years: list[int]) -> None:
+def compare_income_month_years(df: pl.DataFrame, years: list[int]) -> None:
 	"""
 	Renders a grouped bar chart comparing monthly income
 	across multiple years.
@@ -375,77 +420,55 @@ def compare_income_month_years(df: pd.DataFrame, years: list[int]) -> None:
 
 	st.subheader(
 		"Comparison of Income by Month and Year in "
-		f"{str(', '.join([str(year) for year in years]))}"
+		f"{', '.join([str(y) for y in years])}"
 	)
 
-	if len(years) != 0:
-		filtered_by_years = df[df[COL_FECHA_VENTA].dt.year.isin(years)].copy()
-		filtered_by_years.loc[:, COL_YEAR_ES] = filtered_by_years[
-			COL_FECHA_VENTA
-		].dt.year.astype(str)
-		filtered_by_years.loc[:, COL_MONTH_ES] = filtered_by_years[
-			COL_FECHA_VENTA
-		].dt.month
-		filtered_by_years.loc[:, COL_MONTH_NAME_ES] = filtered_by_years[
-			COL_FECHA_VENTA
-		].dt.strftime("%B")
-		filtered_by_years.loc[:, COL_YEAR_MONTH] = filtered_by_years[
-			COL_FECHA_VENTA
-		].dt.strftime("%Y-%m")
-
-		income_by_month_year = (
-			filtered_by_years.groupby(
-				[COL_YEAR_ES, COL_MONTH_ES, COL_MONTH_NAME_ES, COL_YEAR_MONTH]
-			)[COL_PRECIO_PRODUCTO]
-			.sum()
-			.reset_index()
-		)
-
-		fig = px.bar(
-			income_by_month_year,
-			x=COL_MONTH_NAME_ES,
-			y=COL_PRECIO_PRODUCTO,
-			color=COL_YEAR_ES,
-			barmode="group",
-			text=COL_PRECIO_PRODUCTO,
-			color_discrete_sequence=px.colors.qualitative.Pastel,
-			category_orders={
-				COL_MONTH_NAME_ES: [
-					"January",
-					"February",
-					"March",
-					"April",
-					"May",
-					"June",
-					"July",
-					"August",
-					"September",
-					"October",
-					"November",
-					"December",
-				]
-			},
-		)
-		fig.update_layout(
-			xaxis_title=COL_MONTH,
-			yaxis_title="Income (€)",
-			legend_title=COL_YEAR,
-			xaxis_tickangle=-45,
-		)
-		fig.update_traces(
-			texttemplate="%{text:.0f}€",
-			textposition="outside",
-			textfont_size=10,
-			cliponaxis=False,
-		)
-
-		st.plotly_chart(fig, width="stretch")
-
-	else:
+	if not years:
 		st.error("No years selected", icon="⚠️")
+		return
+
+	filtered = df.filter(pl.col(COL_FECHA_VENTA).dt.year().is_in(years)).with_columns(
+		pl.col(COL_FECHA_VENTA).dt.year().cast(pl.Utf8).alias(COL_YEAR_STR),
+		pl.col(COL_FECHA_VENTA).dt.month().alias(COL_MONTH_NUM),
+		pl.col(COL_FECHA_VENTA).dt.strftime("%B").alias(COL_MONTH_NAME),
+		pl.col(COL_FECHA_VENTA).dt.strftime("%Y-%m").alias(COL_YEAR_MONTH),
+	)
+
+	income_by_month_year = (
+		filtered.group_by([COL_YEAR_STR, COL_MONTH_NUM, COL_MONTH_NAME, COL_YEAR_MONTH])
+		.agg(pl.col(COL_PRECIO_PRODUCTO).sum())
+		.sort([COL_YEAR_STR, COL_MONTH_NUM])
+	)
+
+	fig = px.bar(
+		income_by_month_year.to_pandas(),
+		x=COL_MONTH_NAME,
+		y=COL_PRECIO_PRODUCTO,
+		color=COL_YEAR_STR,
+		barmode="group",
+		text=COL_PRECIO_PRODUCTO,
+		color_discrete_sequence=px.colors.qualitative.Pastel,
+		category_orders={
+			COL_MONTH_NAME: list(MONTHS_NAMES),
+		},
+	)
+	fig.update_layout(
+		xaxis_title=COL_MONTH,
+		yaxis_title="Income (€)",
+		legend_title=COL_YEAR,
+		xaxis_tickangle=-45,
+	)
+	fig.update_traces(
+		texttemplate="%{text:.0f}€",
+		textposition="outside",
+		textfont_size=10,
+		cliponaxis=False,
+	)
+
+	st.plotly_chart(fig, width="stretch")
 
 
-def flow_money(df: pd.DataFrame, years: list[int]) -> None:
+def flow_money(df: pl.DataFrame, years: list[int]) -> None:
 	"""
 	Displays aggregated financial metrics and a detailed
 	annual breakdown table for the selected years.
@@ -458,35 +481,30 @@ def flow_money(df: pd.DataFrame, years: list[int]) -> None:
 		None.
 	"""
 
-	st.subheader(
-		f"Financial Flow Analysis: {str(', '.join([str(year) for year in years]))}"
-	)
+	st.subheader(f"Financial Flow Analysis: {', '.join([str(y) for y in years])}")
 
-	if len(years) != 0:
-		all_monthly_summaries, all_annual_summaries = [], []
-
-		for year in years:
-			monthly, annual = summarize_year(df, year)
-			all_monthly_summaries.append(monthly)
-			all_annual_summaries.append(annual)
-
-		annual_overview_df = pd.DataFrame(all_annual_summaries)
-
-		revenue_col, products_col, _ = st.columns(3)
-		revenue_col.metric(
-			"Total Revenue", f"{annual_overview_df['Total_Revenue'].sum():,.2f} €"
-		)
-		products_col.metric(
-			"Total Products", f"{annual_overview_df['Total_Products'].sum():,}"
-		)
-
-		st.dataframe(annual_overview_df.round(2), width="stretch")
-
-	else:
+	if not years:
 		st.error("No years selected", icon="⚠️")
+		return
+
+	all_annual_summaries = []
+
+	for year in years:
+		_, annual = summarize_year(df, year)
+		all_annual_summaries.append(annual)
+
+	annual_overview_df = pl.DataFrame(all_annual_summaries)
+
+	revenue_col, products_col, _ = st.columns(3)
+	total_revenue = annual_overview_df.get_column(COL_TOTAL_REVENUE).sum()
+	total_products = annual_overview_df.get_column(COL_TOTAL_PRODUCTS).sum()
+	revenue_col.metric("Total Revenue", f"{total_revenue:,.2f} €")
+	products_col.metric("Total Products", f"{total_products:,}")
+
+	st.dataframe(annual_overview_df.to_pandas().round(2), width="stretch")
 
 
-def category_sales_by_period(df: pd.DataFrame, years: list[int]) -> None:
+def category_sales_by_period(df: pl.DataFrame, years: list[int]) -> None:
 	"""
 	Displays product categories sold per month with quantity
 	and total price for the given year(s).
@@ -499,63 +517,65 @@ def category_sales_by_period(df: pd.DataFrame, years: list[int]) -> None:
 		None.
 	"""
 
-	st.subheader(
-		f"Category Sales by Month in {str(', '.join([str(year) for year in years]))}"
+	st.subheader(f"Category Sales by Month in {', '.join([str(y) for y in years])}")
+
+	if not years:
+		st.error("No years selected", icon="⚠️")
+		return
+
+	filtered_sales = df.filter(
+		pl.col(COL_FECHA_VENTA).dt.year().is_in(years)
+	).with_columns(
+		pl.col(COL_FECHA_VENTA).dt.year().alias(COL_YEAR_STR),
+		pl.col(COL_FECHA_VENTA).dt.month().alias(COL_MONTH_NUM),
 	)
 
-	if len(years) != 0:
-		filtered_sales = df[df[COL_FECHA_VENTA].dt.year.isin(years)].copy()
-		filtered_sales[COL_YEAR_ES] = filtered_sales[COL_FECHA_VENTA].dt.year
-		filtered_sales[COL_MONTH_ES] = filtered_sales[COL_FECHA_VENTA].dt.month
+	all_months = sorted(filtered_sales.get_column(COL_MONTH_NUM).unique().to_list())
+	month_names = [MONTHS_NAMES[m - 1] for m in all_months]
 
-		all_months = sorted(filtered_sales[COL_MONTH_ES].unique())
-		month_names = [MONTHS_NAMES[m - 1] for m in all_months]
+	selected_month_name = st.selectbox("Select a month", month_names)
+	selected_month = all_months[month_names.index(selected_month_name)]
 
-		selected_month_name = st.selectbox("Select a month", month_names)
-		selected_month = all_months[month_names.index(selected_month_name)]
+	month_data = filtered_sales.filter(pl.col(COL_MONTH_NUM) == selected_month)
 
-		month_data = filtered_sales[filtered_sales[COL_MONTH_ES] == selected_month]
-
-		summary = (
-			month_data.groupby([COL_TIPO_PRODUCTO, COL_YEAR_ES])
-			.agg(
-				Quantity=(COL_TIPO_PRODUCTO, COL_COUNT),
-				Total_Price=(COL_PRECIO_PRODUCTO, "sum"),
-			)
-			.reset_index()
+	summary = (
+		month_data.group_by([COL_TIPO_PRODUCTO, COL_YEAR_STR])
+		.agg(
+			pl.len().alias(COL_QUANTITY),
+			pl.col(COL_PRECIO_PRODUCTO).sum().alias(COL_TOTAL_PRICE),
 		)
-		summary[COL_YEAR_ES] = summary[COL_YEAR_ES].astype(str)
+		.with_columns(pl.col(COL_YEAR_STR).cast(pl.Utf8).alias(COL_YEAR_STR))
+	)
 
-		col1, col2 = st.columns(2)
+	summary_pd = summary.to_pandas()
 
-		with col1:
-			fig = px.bar(
-				summary,
-				x=COL_TIPO_PRODUCTO,
-				y=COL_QUANTITY,
-				color=COL_YEAR_ES,
-				barmode="group",
-				title="Quantity by Category",
-				color_discrete_sequence=px.colors.qualitative.Pastel,
-			)
-			fig.update_layout(xaxis_tickangle=-45)
-			st.plotly_chart(fig, width="stretch")
+	col1, col2 = st.columns(2)
 
-		with col2:
-			fig = px.bar(
-				summary,
-				x=COL_TIPO_PRODUCTO,
-				y=COL_TOTAL_PRICE,
-				color=COL_YEAR_ES,
-				barmode="group",
-				title="Total Price (€) by Category",
-				color_discrete_sequence=px.colors.qualitative.Pastel,
-			)
-			fig.update_layout(xaxis_tickangle=-45)
-			st.plotly_chart(fig, width="stretch")
+	with col1:
+		fig = px.bar(
+			summary_pd,
+			x=COL_TIPO_PRODUCTO,
+			y=COL_QUANTITY,
+			color=COL_YEAR_STR,
+			barmode="group",
+			title="Quantity by Category",
+			color_discrete_sequence=px.colors.qualitative.Pastel,
+		)
+		fig.update_layout(xaxis_tickangle=-45)
+		st.plotly_chart(fig, width="stretch")
 
-	else:
-		st.error("No years selected", icon="⚠️")
+	with col2:
+		fig = px.bar(
+			summary_pd,
+			x=COL_TIPO_PRODUCTO,
+			y=COL_TOTAL_PRICE,
+			color=COL_YEAR_STR,
+			barmode="group",
+			title="Total Price (€) by Category",
+			color_discrete_sequence=px.colors.qualitative.Pastel,
+		)
+		fig.update_layout(xaxis_tickangle=-45)
+		st.plotly_chart(fig, width="stretch")
 
 
 def display_all_graphs(has_valid_credentials: bool) -> None:
@@ -574,7 +594,14 @@ def display_all_graphs(has_valid_credentials: bool) -> None:
 	"""
 
 	if has_valid_credentials:
-		available_years = st.session_state.dataframe[COL_FECHA_VENTA].dt.year.unique()
+		df: pl.DataFrame | None = st.session_state[SESSION_DATAFRAME]
+		if df is None:
+			st.warning("No data loaded yet.", icon="⚠️")
+			return
+
+		available_years = sorted(
+			df.get_column(COL_FECHA_VENTA).dt.year().unique().to_list()
+		)
 		is_multi_year_comparison: bool = st.checkbox("Compare multiple years.")
 
 		if is_multi_year_comparison:
@@ -583,30 +610,24 @@ def display_all_graphs(has_valid_credentials: bool) -> None:
 				available_years,
 			)
 
-			compare_products_years(df=st.session_state.dataframe, years=selected_years)
-			compare_income_month_years(
-				df=st.session_state.dataframe, years=selected_years
-			)
-			flow_money(df=st.session_state.dataframe, years=selected_years)
-			category_sales_by_period(
-				df=st.session_state.dataframe, years=selected_years
-			)
+			compare_products_years(df=df, years=selected_years)
+			compare_income_month_years(df=df, years=selected_years)
+			flow_money(df=df, years=selected_years)
+			category_sales_by_period(df=df, years=selected_years)
 		else:
-			selected_year: str = st.selectbox("Select a year", available_years)
+			selected_year: int = st.selectbox("Select a year", available_years)
 
-			product_month(df=st.session_state.dataframe, year=int(selected_year))
-			money_month(df=st.session_state.dataframe, year=int(selected_year))
+			product_month(df=df, year=selected_year)
+			money_month(df=df, year=selected_year)
 
 			heatmap_left_col, heatmap_right_col = st.columns(2)
 			with heatmap_left_col:
-				gender_status(df=st.session_state.dataframe, year=int(selected_year))
+				gender_status(df=df, year=selected_year)
 			with heatmap_right_col:
-				status_country(df=st.session_state.dataframe, year=int(selected_year))
+				status_country(df=df, year=selected_year)
 
-			gender_country(df=st.session_state.dataframe, year=int(selected_year))
-			category_sales_by_period(
-				df=st.session_state.dataframe, years=[int(selected_year)]
-			)
+			gender_country(df=df, year=selected_year)
+			category_sales_by_period(df=df, years=[selected_year])
 
 
 config_streamlit_page(page_name="Graphs")

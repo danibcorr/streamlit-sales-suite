@@ -2,10 +2,16 @@
 import json
 
 # 3pps
-import pandas as pd
+import polars as pl
 import streamlit as st
 
 # Own modules
+from config.constants import (
+    COL_FECHA_VENTA,
+    SESSION_CREDENTIALS,
+    SESSION_CREDENTIALS_UPLOADED,
+    SESSION_DATAFRAME,
+)
 from dataframe_schema import SalesDataFrameSchema
 from utils import generate_synthetic_data
 
@@ -19,9 +25,9 @@ def load_synthetic_data() -> None:
 		None.
 	"""
 
-	st.session_state.dataframe = generate_synthetic_data()
-	st.session_state.credentials = "Synthetic"
-	st.session_state.credentials_uploaded = True
+	st.session_state[SESSION_DATAFRAME] = generate_synthetic_data()
+	st.session_state[SESSION_CREDENTIALS] = "Synthetic"
+	st.session_state[SESSION_CREDENTIALS_UPLOADED] = True
 	st.sidebar.success("Synthetic data loaded successfully", icon="✅")
 
 
@@ -38,11 +44,11 @@ def load_excel_file(path: str) -> None:
 		None.
 	"""
 
-	df = pd.read_excel(path)
+	df = pl.read_excel(path).with_columns(pl.col(COL_FECHA_VENTA).cast(pl.Date))
 	is_valid, error_msg = SalesDataFrameSchema.validate(df)
 
 	if is_valid:
-		st.session_state.dataframe = df
+		st.session_state[SESSION_DATAFRAME] = df
 		st.sidebar.success("File successfully loaded", icon="✅")
 	else:
 		st.sidebar.error(f"Invalid DataFrame: {error_msg}", icon="⚠️")
@@ -65,8 +71,8 @@ def process_credentials_file(credentials_file) -> None:
 	try:
 		parsed_credentials = json.load(credentials_file)
 
-		st.session_state.credentials = parsed_credentials
-		st.session_state.credentials_uploaded = True
+		st.session_state[SESSION_CREDENTIALS] = parsed_credentials
+		st.session_state[SESSION_CREDENTIALS_UPLOADED] = True
 
 		st.sidebar.success("Credentials successfully uploaded", icon="✅")
 
@@ -96,10 +102,10 @@ def upload_credentials() -> None:
 		None.
 	"""
 
-	if "credentials_uploaded" not in st.session_state:
-		st.session_state.credentials_uploaded = False
+	if SESSION_CREDENTIALS_UPLOADED not in st.session_state:
+		st.session_state[SESSION_CREDENTIALS_UPLOADED] = False
 
-	if st.session_state.credentials_uploaded:
+	if st.session_state[SESSION_CREDENTIALS_UPLOADED]:
 		st.sidebar.info("Credentials already uploaded and loaded.")
 		return
 
@@ -169,8 +175,8 @@ def streamlit_configuration() -> None:
 		]
 	}
 
-	st.session_state.setdefault("credentials", None)
-	st.session_state.setdefault("dataframe", None)
+	st.session_state.setdefault(SESSION_CREDENTIALS, None)
+	st.session_state.setdefault(SESSION_DATAFRAME, None)
 
 	upload_credentials()
 

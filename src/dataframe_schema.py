@@ -1,22 +1,18 @@
-# Standard libraries
-from dataclasses import dataclass
-
 # 3pps
-import pandas as pd
+import polars as pl
 
 # Own modules
 from config import REQUIRED_COLUMNS
 from config.constants import COL_FECHA_VENTA
 
 
-@dataclass(frozen=True)
 class SalesDataFrameSchema:
 	"""
 	Schema for validating sales DataFrame columns.
 	"""
 
 	@classmethod
-	def validate(cls, df: pd.DataFrame) -> tuple[bool, str]:
+	def validate(cls, df: pl.DataFrame) -> tuple[bool, str]:
 		"""
 		Validates that the DataFrame contains all required columns
 		and correct data types.
@@ -32,9 +28,14 @@ class SalesDataFrameSchema:
 		missing_columns = set(REQUIRED_COLUMNS) - set(df.columns)
 
 		if missing_columns:
-			return False, f"Missing columns: {', '.join(sorted(missing_columns))}"
+			return (
+				False,
+				f"Missing columns: {', '.join(sorted(missing_columns))}",
+			)
 
-		if not pd.api.types.is_datetime64_any_dtype(df[COL_FECHA_VENTA]):
-			return False, f"'{COL_FECHA_VENTA}' must be datetime type"
+		if df.schema[COL_FECHA_VENTA] != pl.Date and not isinstance(
+			df.schema[COL_FECHA_VENTA], pl.Datetime
+		):
+			return False, f"'{COL_FECHA_VENTA}' must be a date type"
 
 		return True, ""
