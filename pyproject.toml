@@ -1,6 +1,6 @@
 [project]
 name = "streamlit-sales-suite"
-version = "0.1.8"
+version = "0.2.0"
 description = "Streamlit Sales Suite"
 authors = [
     {name = "Daniel Bazo Correa", email = "none@none.com"},
@@ -26,6 +26,7 @@ dependencies = [
 ]
 
 [tool.uv]
+default-groups = "all"
 cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true } }]
 
 [dependency-groups]

@@ -5,6 +5,14 @@ import pandas as pd
 import pytest
 
 # Own modules
+from config.constants import (
+    COL_DESCUENTO_LOTE,
+    COL_FECHA_VENTA,
+    COL_MONTH_NAME,
+    COL_PRECIO_PRODUCTO,
+    COL_TOTAL_PRODUCTS,
+    COL_TOTAL_REVENUE,
+)
 from utils.utils import obtain_top, summarize_year
 
 
@@ -95,11 +103,11 @@ class TestSummarizeYear:
 
 		return pd.DataFrame(
 			{
-				"Fecha de venta": pd.to_datetime(
+				COL_FECHA_VENTA: pd.to_datetime(
 					["2024-01-15", "2024-01-20", "2024-03-10", "2023-06-01"]
 				),
-				"Precio producto": [100.0, 200.0, 150.0, 50.0],
-				"Descuentos (%)": [10.0, 20.0, 5.0, 15.0],
+				COL_PRECIO_PRODUCTO: [100.0, 200.0, 150.0, 50.0],
+				COL_DESCUENTO_LOTE: [10.0, 20.0, 5.0, 15.0],
 			}
 		)
 
@@ -125,7 +133,7 @@ class TestSummarizeYear:
 		"""
 
 		_, annual = summarize_year(sales_df, 2024)
-		assert annual["Total_Revenue"] == 450.0
+		assert annual[COL_TOTAL_REVENUE] == 450.0
 
 	def test_annual_total_products(self, sales_df: pd.DataFrame) -> None:
 		"""
@@ -137,7 +145,7 @@ class TestSummarizeYear:
 		"""
 
 		_, annual = summarize_year(sales_df, 2024)
-		assert annual["Total_Products"] == 3
+		assert annual[COL_TOTAL_PRODUCTS] == 3
 
 	def test_year_with_no_data(self, sales_df: pd.DataFrame) -> None:
 		"""
@@ -149,8 +157,8 @@ class TestSummarizeYear:
 		"""
 
 		monthly, annual = summarize_year(sales_df, 2025)
-		assert annual["Total_Revenue"] == 0
-		assert annual["Total_Products"] == 0
+		assert annual[COL_TOTAL_REVENUE] == 0
+		assert annual[COL_TOTAL_PRODUCTS] == 0
 
 	def test_monthly_month_names(self, sales_df: pd.DataFrame) -> None:
 		"""
@@ -162,5 +170,5 @@ class TestSummarizeYear:
 		"""
 
 		monthly, _ = summarize_year(sales_df, 2024)
-		assert monthly.loc[0, "Month_Name"] == "January"
-		assert monthly.loc[2, "Month_Name"] == "March"
+		assert monthly.loc[0, COL_MONTH_NAME] == "January"
+		assert monthly.loc[2, COL_MONTH_NAME] == "March"

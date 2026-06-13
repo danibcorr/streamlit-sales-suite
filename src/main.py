@@ -10,7 +10,7 @@ from dataframe_schema import SalesDataFrameSchema
 from utils import generate_synthetic_data
 
 
-def _load_synthetic_data() -> None:
+def load_synthetic_data() -> None:
 	"""
 	Generates and loads synthetic sales data into session
 	state, marking credentials as uploaded.
@@ -25,7 +25,7 @@ def _load_synthetic_data() -> None:
 	st.sidebar.success("Synthetic data loaded successfully", icon="✅")
 
 
-def _load_excel_file(path: str) -> None:
+def load_excel_file(path: str) -> None:
 	"""
 	Loads and validates an Excel file from the specified path.
 	Updates session state with the DataFrame if valid, otherwise
@@ -48,7 +48,7 @@ def _load_excel_file(path: str) -> None:
 		st.sidebar.error(f"Invalid DataFrame: {error_msg}", icon="⚠️")
 
 
-def _process_credentials_file(credentials_file) -> None:
+def process_credentials_file(credentials_file) -> None:
 	"""
 	Parses and processes a JSON credentials file. Updates
 	session state with credentials and loads the Excel file
@@ -71,7 +71,7 @@ def _process_credentials_file(credentials_file) -> None:
 		st.sidebar.success("Credentials successfully uploaded", icon="✅")
 
 		if "path" in parsed_credentials:
-			_load_excel_file(parsed_credentials["path"])
+			load_excel_file(parsed_credentials["path"])
 		else:
 			st.sidebar.error("Invalid credentials: Missing path key.", icon="⚠️")
 
@@ -106,7 +106,7 @@ def upload_credentials() -> None:
 	st.sidebar.subheader("Load credentials")
 
 	if st.sidebar.checkbox("Want to test the app with synthetic data?"):
-		_load_synthetic_data()
+		load_synthetic_data()
 		return
 
 	credentials_file = st.sidebar.file_uploader(
@@ -114,7 +114,7 @@ def upload_credentials() -> None:
 	)
 
 	if credentials_file is not None:
-		_process_credentials_file(credentials_file)
+		process_credentials_file(credentials_file)
 
 
 def streamlit_configuration() -> None:
