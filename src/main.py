@@ -1,6 +1,5 @@
 # Standard libraries
 import json
-import os
 
 # 3pps
 import polars as pl
@@ -8,15 +7,13 @@ import streamlit as st
 
 # Own modules
 from config.constants import (
-	COL_FECHA_VENTA,
-	SESSION_CREDENTIALS,
-	SESSION_CREDENTIALS_UPLOADED,
-	SESSION_DATAFRAME,
+    COL_FECHA_VENTA,
+    SESSION_CREDENTIALS,
+    SESSION_CREDENTIALS_UPLOADED,
+    SESSION_DATAFRAME,
 )
 from dataframe_schema import SalesDataFrameSchema
 from utils import generate_synthetic_data
-
-ALLOWED_DATA_DIR: str = os.environ.get("SALES_DATA_DIR", os.getcwd())
 
 
 def load_synthetic_data() -> None:

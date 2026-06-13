@@ -28,6 +28,7 @@ lint:
 	@echo "Running lint checks..."
 	@uv run ruff format $(PATH_PROJECT_ROOT)
 	@uv run ruff check --fix $(PATH_PROJECT_ROOT)
+	@uv run isort $(PATH_PROJECT_ROOT)
 	@echo "✅ Linting complete."
 
 code-check:

@@ -8,24 +8,24 @@ import pytest
 
 # Own modules
 from config.constants import (
-	COL_DESCUENTO_APLICADO,
-	COL_ESTADO_PRODUCTO,
-	COL_FECHA_VENTA,
-	COL_GENERO,
-	COL_PAIS,
-	COL_PRECIO_PRODUCTO,
-	COL_TIPO_PRODUCTO,
+    COL_DESCUENTO_APLICADO,
+    COL_ESTADO_PRODUCTO,
+    COL_FECHA_VENTA,
+    COL_GENERO,
+    COL_PAIS,
+    COL_PRECIO_PRODUCTO,
+    COL_TIPO_PRODUCTO,
 )
 from resources.graphs import (
-	category_sales_by_period,
-	compare_income_month_years,
-	compare_products_years,
-	flow_money,
-	gender_country,
-	gender_status,
-	money_month,
-	product_month,
-	status_country,
+    category_sales_by_period,
+    compare_income_month_years,
+    compare_products_years,
+    flow_money,
+    gender_country,
+    gender_status,
+    money_month,
+    product_month,
+    status_country,
 )
 
 

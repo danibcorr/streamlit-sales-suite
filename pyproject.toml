@@ -56,19 +56,9 @@ line-ending = "auto"
 docstring-code-format = true
 
 [tool.ruff.lint.isort]
-known-first-party = ["src"]
-section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+case-sensitive = true
 combine-as-imports = true
-split-on-trailing-comma = true
-
-[tool.ruff.lint.isort.import-heading]
-standard-library = "Standard libraries"
-third-party = "3pps"
-first-party = "Own modules"
-local-folder = "Own modules"
-
-[tool.pytest.ini_options]
-pythonpath = ["src"]
+force-to-top = ["src"]
 
 [tool.mypy]
 check_untyped_defs = true
@@ -78,3 +68,16 @@ exclude = [
     ".venv/"
 ]
 cache_dir = "/dev/null"
+
+[tool.isort]
+profile = "black"
+known_first_party = ["src"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+import_heading_stdlib = "Standard libraries"
+import_heading_thirdparty = "3pps"
+import_heading_firstparty = "Own modules"
+import_heading_localfolder = "Own modules"
+line_length = 88
+include_trailing_comma = true
+combine_as_imports = true
+skip_glob = [".venv/*"]

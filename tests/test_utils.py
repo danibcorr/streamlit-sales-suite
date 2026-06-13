@@ -7,12 +7,12 @@ import pytest
 
 # Own modules
 from config.constants import (
-	COL_DESCUENTO_APLICADO,
-	COL_FECHA_VENTA,
-	COL_MONTH_NAME,
-	COL_PRECIO_PRODUCTO,
-	COL_TOTAL_PRODUCTS,
-	COL_TOTAL_REVENUE,
+    COL_DESCUENTO_APLICADO,
+    COL_FECHA_VENTA,
+    COL_MONTH_NAME,
+    COL_PRECIO_PRODUCTO,
+    COL_TOTAL_PRODUCTS,
+    COL_TOTAL_REVENUE,
 )
 from utils.utils import obtain_top, summarize_year
 
