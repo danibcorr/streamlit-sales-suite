@@ -3,11 +3,12 @@ import json
 import os
 
 # 3pps
-import pandas as pd
+import polars as pl
 import streamlit as st
 
 # Own modules
 from config.constants import (
+	COL_FECHA_VENTA,
 	SESSION_CREDENTIALS,
 	SESSION_CREDENTIALS_UPLOADED,
 	SESSION_DATAFRAME,
@@ -18,7 +19,7 @@ from utils import generate_synthetic_data
 ALLOWED_DATA_DIR: str = os.environ.get("SALES_DATA_DIR", os.getcwd())
 
 
-def _load_synthetic_data() -> None:
+def load_synthetic_data() -> None:
 	"""
 	Generates and loads synthetic sales data into session
 	state, marking credentials as uploaded.
@@ -33,7 +34,7 @@ def _load_synthetic_data() -> None:
 	st.sidebar.success("Synthetic data loaded successfully", icon="✅")
 
 
-def _load_excel_file(path: str) -> None:
+def load_excel_file(path: str) -> None:
 	"""
 	Loads and validates an Excel file from the specified path.
 	Updates session state with the DataFrame if valid, otherwise
@@ -46,15 +47,7 @@ def _load_excel_file(path: str) -> None:
 		None.
 	"""
 
-	resolved = os.path.realpath(path)
-	allowed = os.path.realpath(ALLOWED_DATA_DIR)
-	if not resolved.startswith(allowed + os.sep) and resolved != allowed:
-		st.sidebar.error(
-			"Path not allowed: must be within the configured data directory.", icon="⚠️"
-		)
-		return
-
-	df = pd.read_excel(resolved)
+	df = pl.read_excel(path).with_columns(pl.col(COL_FECHA_VENTA).cast(pl.Date))
 	is_valid, error_msg = SalesDataFrameSchema.validate(df)
 
 	if is_valid:
@@ -64,7 +57,7 @@ def _load_excel_file(path: str) -> None:
 		st.sidebar.error(f"Invalid DataFrame: {error_msg}", icon="⚠️")
 
 
-def _process_credentials_file(credentials_file) -> None:
+def process_credentials_file(credentials_file) -> None:
 	"""
 	Parses and processes a JSON credentials file. Updates
 	session state with credentials and loads the Excel file
@@ -87,7 +80,7 @@ def _process_credentials_file(credentials_file) -> None:
 		st.sidebar.success("Credentials successfully uploaded", icon="✅")
 
 		if "path" in parsed_credentials:
-			_load_excel_file(parsed_credentials["path"])
+			load_excel_file(parsed_credentials["path"])
 		else:
 			st.sidebar.error("Invalid credentials: Missing path key.", icon="⚠️")
 
@@ -122,7 +115,7 @@ def upload_credentials() -> None:
 	st.sidebar.subheader("Load credentials")
 
 	if st.sidebar.checkbox("Want to test the app with synthetic data?"):
-		_load_synthetic_data()
+		load_synthetic_data()
 		return
 
 	credentials_file = st.sidebar.file_uploader(
@@ -130,7 +123,7 @@ def upload_credentials() -> None:
 	)
 
 	if credentials_file is not None:
-		_process_credentials_file(credentials_file)
+		process_credentials_file(credentials_file)
 
 
 def streamlit_configuration() -> None:

@@ -23,6 +23,7 @@ __pycache__/
 *.pyd
 *.egg-info
 .python-version
+*.json
 
 # Exceptions
 !/.devcontainer/*

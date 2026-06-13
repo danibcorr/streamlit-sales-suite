@@ -1,6 +1,6 @@
 [project]
 name = "streamlit-sales-suite"
-version = "0.1.9"
+version = "0.2.0"
 description = "Streamlit Sales Suite"
 authors = [
     {name = "Daniel Bazo Correa", email = "none@none.com"},
@@ -15,22 +15,25 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
 ]
 dependencies = [
+    "fastexcel==0.20.2",
     "openpyxl==3.1.5",
-    "pandas==3.0.3",
-    "plotly==6.7.0",
-    "streamlit==1.57.0",
+    "plotly==6.8.0",
+    "polars==1.41.2",
+    "streamlit==1.58.0",
 ]
 
 [tool.uv]
+default-groups = "all"
 cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true } }]
 
 [dependency-groups]
 pipeline = [
     "bandit==1.9.4",
     "complexipy==5.5.0",
-    "mypy==1.20.2",
+    "mypy==2.1.0",
     "pytest==9.0.3",
-    "ruff==0.15.15",
+    "ruff==0.15.17",
+    "isort==8.0.1",
     "pre-commit==4.6.0",
 ]
 
