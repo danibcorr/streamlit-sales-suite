@@ -28,7 +28,7 @@ cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true } }]
 [dependency-groups]
 pipeline = [
     "bandit==1.9.4",
-    "complexipy==6.0.0",
+    "complexipy==6.2.0",
     "mypy==2.1.0",
     "pytest==9.1.1",
     "ruff==0.15.20",
